@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:espresso_dreams/pages/user_page.dart';
+import 'package:espresso_dreams/pages/recipes_page.dart';
+import 'package:espresso_dreams/pages/product_page.dart';
+import 'package:espresso_dreams/pages/forum_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -23,11 +26,8 @@ class _MyHomePageState extends State<MyHomePage> {
             padding: const EdgeInsets.only(right: 16.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            const UserPage())); //print('Botón de icono SVG presionado');
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const UserPage()));
               },
               child: Container(
                 width: 50, // Ajusta el tamaño del botón
@@ -57,19 +57,28 @@ class _MyHomePageState extends State<MyHomePage> {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    // Acción del botón 1
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const RecipesPage()));
                   },
                   child: const Text('Recetas'),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Acción del botón 2
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ProductsPage()));
                   },
                   child: const Text('Comprar'),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Acción del botón 3
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const ForumPage()));
                   },
                   child: const Text('Foro'),
                 ),

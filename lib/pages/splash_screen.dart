@@ -35,7 +35,7 @@ class SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white, // Fondo de la pantalla de presentación
       body: Center(
         child: Image.asset(
-          'assets/icons/espresso_dreams.png', // Reemplaza con la ruta de tu logo PNG
+          'assets/icons/espresso_dreams.png',
           width: 250, // Ajusta el tamaño del logo
           height: 250,
         ),

@@ -63,7 +63,7 @@ flutter:
   assets:
      - assets/icons/9041988_user_male_icon.svg
      - assets/icons/espresso_dreams.png
-  #   - assets/icons/
+     - assets/icons/shopping_cart_icon.svg
   #   - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
