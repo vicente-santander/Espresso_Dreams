@@ -1,120 +1,125 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-
-import 'user_page.dart';
 
 class Recipe {
-  final String name;
-  final String ingredients;
-  final String preparation;
-  List<double> ratings; // Lista de calificaciones
+  String name; // Cambié a variable mutable
+  String ingredients;
+  String preparation;
+  List<double> ratings;
 
   Recipe(this.name, this.ingredients, this.preparation) : ratings = [];
 }
 
-class RecipesPage extends StatefulWidget {
-  const RecipesPage({super.key});
+class MyRecipesPage extends StatefulWidget {
+  const MyRecipesPage({super.key});
 
   @override
-  State<RecipesPage> createState() => _RecipesPageState();
+  State<MyRecipesPage> createState() => _MyRecipesPageState();
 }
 
-class _RecipesPageState extends State<RecipesPage> {
-  // Lista de recetas
-  List<Recipe> recipes = [
+class _MyRecipesPageState extends State<MyRecipesPage> {
+  List<Recipe> savedRecipes = [
     Recipe(
       'Café Americano',
       '• Agua\n• Café molido',
       '1. Hervir agua\n2. Agregar café molido\n3. Revolver y servir.',
-    )..ratings.addAll([5, 5]), // Calificacion de 5
-    Recipe(
-      'Café Latte',
-      '• Café expreso\n• Leche caliente\n• Espuma de leche',
-      '1. Preparar café expreso.\n2. Agregar leche caliente.\n3. Cubrir con espuma de leche.',
-    )..ratings.addAll([5, 5]), // Calificacion de 5
-    Recipe(
-      'Café Mocha',
-      '• Café expreso\n• Chocolate caliente\n• Leche\n• Crema batida',
-      '1. Preparar café expreso.\n2. Mezclar con chocolate caliente.\n3. Agregar leche y cubrir con crema.',
-    ),
-    Recipe(
-      'Café Frappé',
-      '• Café frío\n• Azúcar\n• Hielo\n• Leche',
-      '1. Mezclar café frío, azúcar, y hielo en una licuadora.\n2. Servir con leche.',
-    ),
+    )..ratings.addAll([5, 5]),
     Recipe(
       'Café con Leche',
       '• Café\n• Leche\n• Azúcar (opcional)',
       '1. Preparar café.\n2. Mezclar con leche caliente.\n3. Agregar azúcar si se desea.',
     ),
-    Recipe(
-      'Café Irlandés',
-      '• Café caliente\n• Whisky\n• Azúcar\n• Crema',
-      '1. Preparar café caliente.\n2. Mezclar con whisky y azúcar.\n3. Cubrir con crema.',
-    ),
   ];
 
   List<bool> favoriteStatus = [];
   List<bool> expandedStatus = [];
-  List<Recipe> filteredRecipes = []; // Para almacenar las recetas filtradas
+  List<Recipe> filteredRecipes = [];
   final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    favoriteStatus = List.generate(recipes.length, (_) => false);
-    expandedStatus = List.generate(recipes.length, (_) => false);
-    filteredRecipes =
-        recipes; // Inicialmente, todas las recetas están filtradas
+    favoriteStatus = List.generate(savedRecipes.length, (_) => false);
+    expandedStatus = List.generate(savedRecipes.length, (_) => false);
+    filteredRecipes = savedRecipes;
     searchController.addListener(_filterRecipes);
   }
 
   void _filterRecipes() {
     String query = searchController.text.toLowerCase();
     setState(() {
-      filteredRecipes = recipes.where((recipe) {
+      filteredRecipes = savedRecipes.where((recipe) {
         return recipe.name.toLowerCase().contains(query);
       }).toList();
     });
+  }
+
+  void _editRecipe(int index) {
+    final TextEditingController nameController =
+        TextEditingController(text: filteredRecipes[index].name);
+    final TextEditingController ingredientsController =
+        TextEditingController(text: filteredRecipes[index].ingredients);
+    final TextEditingController preparationController =
+        TextEditingController(text: filteredRecipes[index].preparation);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar Receta'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Nombre'),
+              ),
+              TextField(
+                controller: ingredientsController,
+                decoration: const InputDecoration(labelText: 'Ingredientes'),
+                maxLines: 3, // Permitir múltiples líneas
+              ),
+              TextField(
+                controller: preparationController,
+                decoration: const InputDecoration(labelText: 'Preparación'),
+                maxLines: 5, // Permitir múltiples líneas
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  filteredRecipes[index].name = nameController.text;
+                  filteredRecipes[index].ingredients =
+                      ingredientsController.text;
+                  filteredRecipes[index].preparation =
+                      preparationController.text;
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Guardar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recetas de Café'),
+        title: const Text('Mis Recetas'),
         backgroundColor: const Color.fromARGB(255, 174, 97, 71),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const UserPage()));
-              },
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SvgPicture.asset(
-                    'assets/icons/9041988_user_male_icon.svg',
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // Buscador de recetas
             TextField(
               controller: searchController,
               decoration: const InputDecoration(
@@ -160,6 +165,10 @@ class _RecipesPageState extends State<RecipesPage> {
                                     const SizedBox(height: 8),
                                   ],
                                 ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () => _editRecipe(index),
                               ),
                               IconButton(
                                 icon: Icon(
@@ -230,22 +239,6 @@ class _RecipesPageState extends State<RecipesPage> {
                                 Text(filteredRecipes[index].preparation),
                                 const SizedBox(height: 16),
                                 const Text(
-                                  'Productos Recomendados',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    _buildProductCard(),
-                                    _buildProductCard(),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
                                   'Calificaciones:',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
@@ -266,46 +259,11 @@ class _RecipesPageState extends State<RecipesPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddRecipeDialog(),
-        backgroundColor: const Color.fromARGB(255, 174, 97, 71),
+        onPressed: _showAddRecipeDialog,
+        backgroundColor: const Color.fromARGB(
+            255, 174, 97, 71), // Llama al método para agregar recetas
         child: const Icon(Icons.add),
       ),
-    );
-  }
-
-  Widget _buildRatingSection(int index) {
-    double averageRating = recipes[index].ratings.isNotEmpty
-        ? recipes[index].ratings.reduce((a, b) => a + b) /
-            recipes[index].ratings.length
-        : 0.0;
-    int ratingCount = recipes[index].ratings.length;
-
-    return Column(
-      children: [
-        Text(
-          'Promedio: ${averageRating.toStringAsFixed(1)} ($ratingCount calificaciones)',
-          style: const TextStyle(fontSize: 14),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(5, (starIndex) {
-            return IconButton(
-              icon: Icon(
-                starIndex <
-                        averageRating.floor() // Cambiado de round() a floor()
-                    ? Icons.star
-                    : Icons.star_border,
-                color: Colors.amber,
-              ),
-              onPressed: () {
-                setState(() {
-                  recipes[index].ratings.add((starIndex + 1).toDouble());
-                });
-              },
-            );
-          }),
-        ),
-      ],
     );
   }
 
@@ -356,14 +314,10 @@ class _RecipesPageState extends State<RecipesPage> {
                     ingredientsController.text,
                     preparationController.text,
                   );
-                  recipes.add(newRecipe);
-
-                  // Agregar nuevos estados de favorito y expansión
+                  savedRecipes.add(newRecipe); // Cambia recipes a savedRecipes
                   favoriteStatus.add(false); // Agregar estado de favorito
                   expandedStatus.add(false); // Agregar estado de expansión
-
-                  // Actualizar las recetas filtradas
-                  filteredRecipes = recipes; // Resetea la lista filtrada
+                  filteredRecipes = savedRecipes; // Resetea la lista filtrada
                 });
                 Navigator.of(context).pop();
               },
@@ -375,25 +329,38 @@ class _RecipesPageState extends State<RecipesPage> {
     );
   }
 
-  Widget _buildProductCard() {
-    return Card(
-      child: Column(
-        children: [
-          Icon(
-            Icons.coffee_maker_outlined,
-            size: 40,
-            color: Colors.brown[500],
-          ),
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 174, 97, 71),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Comprar'),
-          ),
-        ],
-      ),
+  Widget _buildRatingSection(int index) {
+    double averageRating = savedRecipes[index].ratings.isNotEmpty
+        ? savedRecipes[index].ratings.reduce((a, b) => a + b) /
+            savedRecipes[index].ratings.length
+        : 0.0;
+    int ratingCount = savedRecipes[index].ratings.length;
+
+    return Column(
+      children: [
+        Text(
+          'Promedio: ${averageRating.toStringAsFixed(1)} ($ratingCount calificaciones)',
+          style: const TextStyle(fontSize: 14),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(5, (starIndex) {
+            return IconButton(
+              icon: Icon(
+                starIndex < averageRating.floor()
+                    ? Icons.star
+                    : Icons.star_border,
+                color: Colors.amber,
+              ),
+              onPressed: () {
+                setState(() {
+                  savedRecipes[index].ratings.add((starIndex + 1).toDouble());
+                });
+              },
+            );
+          }),
+        ),
+      ],
     );
   }
 
