@@ -17,7 +17,7 @@ class SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToHomePage() async {
     // Simula un tiempo de carga
-    await Future.delayed(const Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 4));
 
     // Verifica si el widget aún está montado antes de usar el BuildContext
     if (mounted) {

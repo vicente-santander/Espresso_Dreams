@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// Clase que representa una publicación en el foro
 class ForumPost {
   final String user; // Usuario que creó la publicación
   final String content; // Contenido de la publicación
@@ -15,11 +14,10 @@ class ForumPost {
 }
 
 class ForumPage extends StatefulWidget {
-  const ForumPage({super.key}); // Constructor de la clase
+  const ForumPage({super.key});
 
   @override
-  State<ForumPage> createState() =>
-      _ForumPageState(); // Crea el estado del widget
+  State<ForumPage> createState() => _ForumPageState();
 }
 
 // Estado de la página del foro
@@ -62,8 +60,8 @@ class _ForumPageState extends State<ForumPage> {
           title: const Text('Agregar Publicación'),
           content: TextField(
             controller: contentController,
-            decoration: const InputDecoration(
-                labelText: 'Contenido de la publicación'), // Etiqueta del campo
+            decoration:
+                const InputDecoration(labelText: 'Contenido de la publicación'),
             maxLines: 5, // Permitir múltiples líneas
           ),
           actions: [
@@ -77,7 +75,7 @@ class _ForumPageState extends State<ForumPage> {
               onPressed: () {
                 setState(() {
                   // Agregar nueva publicación a la lista
-                  posts.add(ForumPost('Usuario', contentController.text));
+                  posts.add(ForumPost('Usuario X', contentController.text));
                 });
                 Navigator.of(context).pop(); // Cierra el diálogo
               },
@@ -179,10 +177,25 @@ class _ForumPageState extends State<ForumPage> {
                             fontWeight: FontWeight.bold)), // Mostrar el usuario
                     Text(
                         post.content), // Mostrar el contenido de la publicación
+
+                    const SizedBox(height: 8),
+                    // Mostrar comentarios
+                    Text('Comentarios (${post.comments.length}):'),
+                    for (var comment
+                        in post.comments) // Mostrar cada comentario
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16.0),
+                        child: Text('- $comment'),
+                      ),
                     const SizedBox(
-                        height:
-                            8), // Espacio entre el contenido y las calificaciones
-                    // Mostrar calificación promedio y número de calificaciones
+                        height: 8), // Espacio antes del botón de comentar
+                    ElevatedButton(
+                      onPressed: () {
+                        _addComment(post); // agregar un comentario
+                      },
+                      child: const Text('Comentar'), // Texto del botón
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                         'Calificación promedio: ${averageRating.toStringAsFixed(1)} (${post.ratings.length})'),
                     Row(
@@ -201,25 +214,6 @@ class _ForumPageState extends State<ForumPage> {
                           },
                         );
                       }),
-                    ),
-                    const SizedBox(
-                        height:
-                            8), // Espacio entre calificaciones y comentarios
-                    // Mostrar comentarios
-                    Text('Comentarios (${post.comments.length}):'),
-                    for (var comment
-                        in post.comments) // Mostrar cada comentario
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16.0),
-                        child: Text('- $comment'),
-                      ),
-                    const SizedBox(
-                        height: 8), // Espacio antes del botón de comentar
-                    ElevatedButton(
-                      onPressed: () {
-                        _addComment(post); // agregar un comentario
-                      },
-                      child: const Text('Comentar'), // Texto del botón
                     ),
                   ],
                 ),

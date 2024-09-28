@@ -1,10 +1,84 @@
-import 'package:espresso_dreams/pages/saved_recipes_page.dart';
-import 'package:espresso_dreams/pages/my_recipes_page.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Importa el paquete para SVG
+import 'package:flutter_svg/flutter_svg.dart';
 
-class UserPage extends StatelessWidget {
+class Usuario {
+  final String nombre;
+  final String correo;
+  final int numeroDeRecetas;
+  final double promedioDeRecetas;
+
+  Usuario({
+    required this.nombre,
+    required this.correo,
+    required this.numeroDeRecetas,
+    required this.promedioDeRecetas,
+  });
+}
+
+class UserPage extends StatefulWidget {
   const UserPage({super.key});
+
+  @override
+  State<UserPage> createState() => _UserPageState();
+}
+
+class _UserPageState extends State<UserPage> {
+  // Crea un usuario de ejemplo
+  Usuario usuario = Usuario(
+    nombre: 'Usuario X',
+    correo: 'email@example.com',
+    numeroDeRecetas: 5,
+    promedioDeRecetas: 4.5,
+  );
+
+  void _editUser() {
+    // Método para editar la información del usuario
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        String nuevoNombre = usuario.nombre;
+        String nuevoCorreo = usuario.correo;
+
+        return AlertDialog(
+          title: const Text('Editar Información'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Nombre'),
+                onChanged: (value) {
+                  nuevoNombre = value;
+                },
+                controller: TextEditingController(text: usuario.nombre),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  usuario = Usuario(
+                    nombre: nuevoNombre,
+                    correo: nuevoCorreo,
+                    numeroDeRecetas: usuario.numeroDeRecetas,
+                    promedioDeRecetas: usuario.promedioDeRecetas,
+                  );
+                });
+                Navigator.of(context).pop();
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,45 +100,41 @@ class UserPage extends StatelessWidget {
                 height: 160,
               ),
               const SizedBox(height: 16),
-              const Text(
-                'Nombre del Usuario',
-                style: TextStyle(
+              Text(
+                usuario.nombre,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'email@example.com',
-                style: TextStyle(
+              Text(
+                usuario.correo,
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                 ),
               ),
+              const SizedBox(height: 8),
+              Text(
+                'Número de recetas: ${usuario.numeroDeRecetas}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Promedio de recetas: ${usuario.promedioDeRecetas}',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black,
+                ),
+              ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SavedRecipesPage()));
-                },
-                child: const Text('Recetas guardadas'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const MyRecipesPage()));
-                },
-                child: const Text('Mis recetas'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  // Acción del botón (por ejemplo, editar perfil)
-                },
-                child: const Text('vender productos'),
+                onPressed: _editUser,
+                child: const Text('Editar Información'),
               ),
             ],
           ),

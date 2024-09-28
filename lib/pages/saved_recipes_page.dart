@@ -227,8 +227,7 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
           children: List.generate(5, (starIndex) {
             return IconButton(
               icon: Icon(
-                starIndex <
-                        averageRating.floor() // Cambiado de round() a floor()
+                starIndex < averageRating.floor()
                     ? Icons.star
                     : Icons.star_border,
                 color: Colors.amber,

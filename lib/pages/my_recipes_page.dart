@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Recipe {
-  String name; // Cambié a variable mutable
+  String name;
   String ingredients;
   String preparation;
   List<double> ratings;
@@ -245,7 +245,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                                     fontSize: 16,
                                   ),
                                 ),
-                                _buildRatingSection(index),
+                                _buildRating(index),
                               ],
                             ),
                         ],
@@ -259,7 +259,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddRecipeDialog,
+        onPressed: _addRecipe,
         backgroundColor: const Color.fromARGB(
             255, 174, 97, 71), // Llama al método para agregar recetas
         child: const Icon(Icons.add),
@@ -267,7 +267,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
     );
   }
 
-  void _showAddRecipeDialog() {
+  void _addRecipe() {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController ingredientsController = TextEditingController();
     final TextEditingController preparationController = TextEditingController();
@@ -329,7 +329,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
     );
   }
 
-  Widget _buildRatingSection(int index) {
+  Widget _buildRating(int index) {
     double averageRating = savedRecipes[index].ratings.isNotEmpty
         ? savedRecipes[index].ratings.reduce((a, b) => a + b) /
             savedRecipes[index].ratings.length

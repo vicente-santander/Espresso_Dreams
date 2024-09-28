@@ -4,9 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 class Product {
   final String name;
   final String description;
-  final double price;
+  final int price;
+  int availableQuantity;
 
-  Product(this.name, this.description, this.price);
+  Product(this.name, this.description, this.price, this.availableQuantity);
 }
 
 class ProductsPage extends StatefulWidget {
@@ -27,14 +28,15 @@ class _ProductsPageState extends State<ProductsPage> {
       } else {
         cart[product] = quantity; // Añadir nuevo producto
       }
+      product.availableQuantity -= quantity; // Disminuir la cantidad disponible
     });
   }
 
-  void showPaymentDialog() {
+  void payment() {
     showDialog(
       context: context,
       builder: (context) {
-        double totalPrice = cart.entries
+        int totalPrice = cart.entries
             .map((entry) => entry.key.price * entry.value)
             .reduce((a, b) => a + b);
 
@@ -49,13 +51,13 @@ class _ProductsPageState extends State<ProductsPage> {
                   final quantity = entry.value;
                   return ListTile(
                     title: Text('${product.name} x$quantity'),
-                    trailing: Text(
-                        '\$${(product.price * quantity).toStringAsFixed(3)}'),
+                    trailing:
+                        Text('\$${(product.price * quantity).toString()}'),
                   );
                 }),
                 const Divider(),
                 Text(
-                  'Total a Pagar: \$${totalPrice.toStringAsFixed(3)}',
+                  'Total a Pagar: \$${totalPrice.toString()}',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -73,10 +75,16 @@ class _ProductsPageState extends State<ProductsPage> {
             ),
             TextButton(
               onPressed: () {
-                // Aquí puedes implementar la lógica de pago
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Proceso de pago iniciado')),
                 );
+
+                // Limpiar el carrito y restablecer las cantidades
+                setState(() {
+                  cart.clear();
+                  quantities.fillRange(0, quantities.length, 0);
+                });
+
                 Navigator.of(context).pop(); // Cerrar dialog
               },
               child: const Text('Pagar'),
@@ -90,11 +98,12 @@ class _ProductsPageState extends State<ProductsPage> {
   @override
   Widget build(BuildContext context) {
     List<Product> products = [
-      Product('Café Orgánico', 'Café de origen 100% orgánico', 15.000),
-      Product('Molinillo de Café', 'Molinillo manual para café', 25.500),
-      Product('Taza de Café', 'Taza de cerámica para café', 8.000),
-      Product('Café Espresso', 'Café en grano de espresso', 12.750),
-      Product('Cafetera Francesa', 'Cafetera para preparar café', 20.000),
+      Product('Café Orgánico', 'Café de origen 100% orgánico', 1500, 10),
+      Product('Molinillo de Café', 'Molinillo para café', 2500, 5),
+      Product(
+          'Taza de Café', 'Taza de cerámica para café', 800, 0), // Sin stock
+      Product('Café Espresso', 'Café en grano de espresso', 1200, 7),
+      Product('Cafetera Francesa', 'Cafetera para preparar café', 2000, 2),
     ];
 
     return Scaffold(
@@ -110,6 +119,7 @@ class _ProductsPageState extends State<ProductsPage> {
               child: ListView.builder(
                 itemCount: products.length,
                 itemBuilder: (context, index) {
+                  final product = products[index];
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Padding(
@@ -126,9 +136,18 @@ class _ProductsPageState extends State<ProductsPage> {
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                 ),
-                                Text(products[index].description),
+                                Text(product.description),
+                                Text('\$${product.price.toString()}'),
                                 Text(
-                                    '\$${products[index].price.toStringAsFixed(3)}'),
+                                  product.availableQuantity > 0
+                                      ? 'Disponible: ${product.availableQuantity}'
+                                      : 'Sin stock',
+                                  style: TextStyle(
+                                    color: product.availableQuantity > 0
+                                        ? Colors.black
+                                        : Colors.red,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -148,25 +167,29 @@ class _ProductsPageState extends State<ProductsPage> {
                                   style: const TextStyle(fontSize: 18)),
                               IconButton(
                                 icon: const Icon(Icons.add),
-                                onPressed: () {
-                                  setState(() {
-                                    quantities[index]++;
-                                  });
-                                },
+                                onPressed: product.availableQuantity > 0
+                                    ? () {
+                                        setState(() {
+                                          if (quantities[index] <
+                                              product.availableQuantity) {
+                                            quantities[index]++;
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(const SnackBar(
+                                                    content: Text(
+                                                        'Cantidad máxima alcanzada')));
+                                          }
+                                        });
+                                      }
+                                    : null, // Deshabilitar si no hay stock
                               ),
                               TextButton(
-                                onPressed: () {
-                                  if (quantities[index] > 0) {
-                                    addToCart(
-                                        products[index], quantities[index]);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Selecciona una cantidad mayor a 0')),
-                                    );
-                                  }
-                                },
+                                onPressed: quantities[index] > 0 &&
+                                        product.availableQuantity > 0
+                                    ? () {
+                                        addToCart(product, quantities[index]);
+                                      }
+                                    : null, // Deshabilitar si no hay cantidad
                                 style: TextButton.styleFrom(
                                   backgroundColor:
                                       const Color.fromARGB(255, 174, 97, 71),
@@ -189,7 +212,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 child: Column(
                   children: [
                     Text(
-                      'Total a pagar: \$${cart.entries.map((entry) => entry.key.price * entry.value).reduce((a, b) => a + b).toStringAsFixed(3)}',
+                      'Total a pagar: \$${cart.entries.map((entry) => entry.key.price * entry.value).reduce((a, b) => a + b).toString()}',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -197,7 +220,7 @@ class _ProductsPageState extends State<ProductsPage> {
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
-                      onPressed: showPaymentDialog,
+                      onPressed: payment,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 174, 97, 71),
                         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -207,7 +230,7 @@ class _ProductsPageState extends State<ProductsPage> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           SvgPicture.asset(
-                            'assets/icons/shopping_cart_icon.svg', // Cambia esto a la ruta de tu ícono SVG
+                            'assets/icons/shopping_cart_icon.svg',
                             height: 24,
                             width: 24,
                           ),
