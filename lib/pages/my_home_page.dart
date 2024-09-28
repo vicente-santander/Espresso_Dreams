@@ -238,7 +238,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               SizedBox(height: 5),
                               Text('Cantidad disponible: 10'),
                               SizedBox(height: 5),
-                              Text('Costo: \$150.00'),
+                              Text('Costo: \$15000'),
                             ],
                           ),
                         ),
