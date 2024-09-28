@@ -81,7 +81,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               TextField(
                 controller: preparationController,
                 decoration: const InputDecoration(labelText: 'Preparación'),
-                maxLines: 5, // Permitir múltiples líneas
+                maxLines: 3, // Permitir múltiples líneas
               ),
             ],
           ),

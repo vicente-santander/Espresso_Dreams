@@ -190,7 +190,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         IconButton(
                           icon: const Icon(Icons.share),
-                          onPressed: () {},
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Compartiendo receta'),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

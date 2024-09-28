@@ -27,7 +27,7 @@ class _UserPageState extends State<UserPage> {
   Usuario usuario = Usuario(
     nombre: 'Usuario X',
     correo: 'email@example.com',
-    numeroDeRecetas: 5,
+    numeroDeRecetas: 3,
     promedioDeRecetas: 4.5,
   );
 
