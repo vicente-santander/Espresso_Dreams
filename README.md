@@ -1,4 +1,7 @@
 # espresso_dreams
+## Descripción del Proyecto
+Espresso Dreams es una aplicación móvil diseñada para los amantes del café, que permite a los usuarios gestionar, descubrir y compartir recetas de café, además de comprar productos relacionados. Entre sus principales características, ofrece la posibilidad de crear y gestionar un perfil, explorar una amplia variedad de recetas, guardar favoritas, añadir recetas propias, y comprar productos como cafeteras. Además, cuenta con una sección para vender productos y un foro para interactuar con otros usuarios, discutir técnicas de preparación y compartir experiencias. La aplicación ha sido desarrollada en Flutter para ofrecer compatibilidad multiplataforma.
+
 ## Requerimientos
 ### 1. Gestión de Recetas
 - Creación de Recetas: Los usuarios deben poder crear nuevas recetas, especificando ingredientes, pasos de preparación y técnicas utilizadas.
