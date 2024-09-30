@@ -11,7 +11,6 @@ Espresso Dreams es una aplicación móvil diseñada para los amantes del café, 
 - Sección de Favoritos: Crear una sección o página dentro de la aplicación donde los usuarios puedan ver todas las recetas que han marcado como favoritas.
 ### 3. Exploración y Búsqueda de Recetas
 - Ofrecer una función de búsqueda avanzada que permita filtrar recetas por tipo de preparación, ingredientes, tiempo de preparación, etc.
-- Mostrar recetas recomendadas basadas en las preferencias del usuario y en la popularidad dentro de la comunidad.
 ### 4. Sistema de Calificación
 - Método de Calificación: Implementar un sistema de calificación que permita a los usuarios valorar las recetas mediante un sistema de estrellas, puntos, o un rango de 1 a 5.
 - Visualización de Calificaciones: Mostrar la calificación promedio de la receta en la página de detalles de la receta y permitir a los usuarios ver la distribución de calificaciones si es aplicable.
