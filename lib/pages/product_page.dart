@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-class Product {
-  final String name;
-  final String description;
-  final int price;
-  int availableQuantity;
-
-  Product(this.name, this.description, this.price, this.availableQuantity);
-}
+import 'package:espresso_dreams/models/product_class.dart';
 
 class ProductsPage extends StatefulWidget {
   const ProductsPage({super.key});
@@ -36,9 +28,7 @@ class _ProductsPageState extends State<ProductsPage> {
     showDialog(
       context: context,
       builder: (context) {
-        int totalPrice = cart.entries
-            .map((entry) => entry.key.price * entry.value)
-            .reduce((a, b) => a + b);
+        int totalPrice = Product.calculateTotal(cart);
 
         return AlertDialog(
           title: const Text('Resumen de Compra'),

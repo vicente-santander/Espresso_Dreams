@@ -1,17 +1,5 @@
 import 'package:flutter/material.dart';
-
-class ForumPost {
-  final String user; // Usuario que creó la publicación
-  final String content; // Contenido de la publicación
-  List<String> comments; // Lista de comentarios
-  List<double> ratings; // Lista de calificaciones
-
-  // Constructor de la clase
-  ForumPost(this.user, this.content,
-      {List<String>? comments, List<double>? ratings})
-      : comments = comments ?? [], // Inicializa la lista de comentarios
-        ratings = ratings ?? []; // Inicializa la lista de calificaciones
-}
+import 'package:espresso_dreams/models/forum_class.dart';
 
 class ForumPage extends StatefulWidget {
   const ForumPage({super.key});
@@ -74,8 +62,8 @@ class _ForumPageState extends State<ForumPage> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  // Agregar nueva publicación a la lista
-                  posts.add(ForumPost('Usuario X', contentController.text));
+                  // Agregar nueva publicación a la lista usando el método de la clase
+                  posts.add(ForumPost.createPost(contentController.text));
                 });
                 Navigator.of(context).pop(); // Cierra el diálogo
               },
@@ -112,8 +100,8 @@ class _ForumPageState extends State<ForumPage> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  // Agregar comentario a la publicación
-                  post.comments.add(commentController.text);
+                  // Agregar comentario a la publicación usando el nuevo método
+                  post.addComment(commentController.text);
                 });
                 Navigator.of(context).pop(); // Cierra el diálogo
               },
@@ -123,27 +111,6 @@ class _ForumPageState extends State<ForumPage> {
         );
       },
     );
-  }
-
-  // Método para calificar una publicación
-  void _ratePost(ForumPost post, double rating) {
-    setState(() {
-      post.ratings
-          .add(rating); // Agregar la calificación a la lista de calificaciones
-    });
-  }
-
-  // Método para calcular la calificación promedio de una publicación
-  double _calculateAverageRating(ForumPost post) {
-    if (post.ratings.isEmpty) return 0; // Retornar 0 si no hay calificaciones
-    return post.ratings.reduce((a, b) => a + b) /
-        post.ratings.length; // Calcular el promedio
-  }
-
-  // Método para obtener la cantidad de estrellas que se deben mostrar
-  int _getStarCount(double averageRating) {
-    return averageRating
-        .floor(); // Redondear hacia abajo para mostrar el número correcto de estrellas
   }
 
   @override
@@ -160,10 +127,10 @@ class _ForumPageState extends State<ForumPage> {
           itemCount: posts.length, // Número de publicaciones
           itemBuilder: (context, index) {
             final post = posts[index]; // Obtener la publicación actual
-            final averageRating = _calculateAverageRating(
-                post); // Calcular la calificación promedio
+            final averageRating = post
+                .calculateAverageRating(); // Calcular la calificación promedio
             final starCount =
-                _getStarCount(averageRating); // Obtener el número de estrellas
+                post.getStarCount(); // Obtener el número de estrellas
 
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -177,7 +144,6 @@ class _ForumPageState extends State<ForumPage> {
                             fontWeight: FontWeight.bold)), // Mostrar el usuario
                     Text(
                         post.content), // Mostrar el contenido de la publicación
-
                     const SizedBox(height: 8),
                     // Mostrar comentarios
                     Text('Comentarios (${post.comments.length}):'),
@@ -209,8 +175,8 @@ class _ForumPageState extends State<ForumPage> {
                             color: Colors.amber,
                           ),
                           onPressed: () {
-                            _ratePost(
-                                post, starIndex + 1.0); // Agregar calificación
+                            post.rate(starIndex + 1.0); // Agregar calificación
+                            setState(() {}); // Forzar actualización del estado
                           },
                         );
                       }),

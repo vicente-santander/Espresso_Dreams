@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-
-class Recipe {
-  final String name;
-  final String ingredients;
-  final String preparation;
-  List<double> ratings; // Lista de calificaciones
-
-  Recipe(this.name, this.ingredients, this.preparation) : ratings = [];
-}
+import 'package:espresso_dreams/models/recipe_class.dart';
 
 class SavedRecipesPage extends StatefulWidget {
   const SavedRecipesPage({super.key});
@@ -193,7 +185,7 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
                                     fontSize: 16,
                                   ),
                                 ),
-                                _buildRatingSection(index),
+                                _buildRating(index),
                               ],
                             ),
                         ],
@@ -209,12 +201,9 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
     );
   }
 
-  Widget _buildRatingSection(int index) {
-    double averageRating = savedRecipes[index].ratings.isNotEmpty
-        ? savedRecipes[index].ratings.reduce((a, b) => a + b) /
-            savedRecipes[index].ratings.length
-        : 0.0;
-    int ratingCount = savedRecipes[index].ratings.length;
+  Widget _buildRating(int index) {
+    double averageRating = savedRecipes[index].getAverageRating();
+    int ratingCount = savedRecipes[index].getRatingCount();
 
     return Column(
       children: [
@@ -234,7 +223,7 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
               ),
               onPressed: () {
                 setState(() {
-                  savedRecipes[index].ratings.add((starIndex + 1).toDouble());
+                  savedRecipes[index].addRating((starIndex + 1).toDouble());
                 });
               },
             );

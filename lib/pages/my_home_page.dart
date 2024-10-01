@@ -7,6 +7,8 @@ import 'package:espresso_dreams/pages/forum_page.dart';
 import 'package:espresso_dreams/pages/saved_recipes_page.dart';
 import 'package:espresso_dreams/pages/my_recipes_page.dart';
 import 'package:espresso_dreams/pages/sell_product_page.dart';
+import 'package:espresso_dreams/models/recipe_class.dart';
+import 'package:espresso_dreams/models/product_class.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -18,7 +20,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool isFavorite = false; // Variable para controlar el estado del favorito
+  bool isFavorite = false;
+
+  // Instancia de la receta más vista usando la clase Recipe
+  Recipe mostViewedRecipe = Recipe(
+    'Café Irlandés',
+    '• Café caliente\n• Whisky\n• Azúcar\n• Crema',
+    '1. Preparar café caliente.\n2. Mezclar con whisky y azúcar.\n3. Cubrir con crema.',
+  );
+
+  Product bestSellingProduct = Product(
+      'Cafetera',
+      'Cafetera de alta calidad para preparar el mejor espresso en casa.',
+      15000,
+      10);
 
   @override
   Widget build(BuildContext context) {
@@ -161,17 +176,15 @@ class _MyHomePageState extends State<MyHomePage> {
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Café Irlandés',
-                      style: TextStyle(fontSize: 18),
+                    Text(
+                      mostViewedRecipe.name, // Usa el nombre de la receta
+                      style: const TextStyle(fontSize: 18),
                     ),
                     const SizedBox(height: 5),
-                    const Text(
-                      '• Café caliente\n• Whisky\n• Azúcar\n• Crema',
-                    ),
+                    Text(mostViewedRecipe.ingredients), // Usa los ingredientes
                     const SizedBox(height: 10),
-                    const Text(
-                      'Instrucciones:\n1. Preparar café caliente.\n2. Mezclar con whisky y azúcar.\n3. Cubrir con crema.',
+                    Text(
+                      'Instrucciones:\n${mostViewedRecipe.preparation}', // Usa las instrucciones
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -204,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            // Card para el producto más vendido
+            // Card para el producto más vendido usando la clase Product
             Card(
               margin: const EdgeInsets.all(16.0),
               child: Padding(
@@ -221,24 +234,29 @@ class _MyHomePageState extends State<MyHomePage> {
                           height: 100,
                         ),
                         const SizedBox(width: 16),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 'Producto más vendido',
                                 style: TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               Text(
-                                'Cafetera',
-                                style: TextStyle(fontSize: 18),
+                                bestSellingProduct
+                                    .name, // Usa el nombre del producto
+                                style: const TextStyle(fontSize: 18),
                               ),
-                              SizedBox(height: 5),
-                              Text('Cantidad disponible: 10'),
-                              SizedBox(height: 5),
-                              Text('Costo: \$15000'),
+                              const SizedBox(height: 5),
+                              Text(bestSellingProduct
+                                  .description), // Usa la descripción
+                              const SizedBox(height: 5),
+                              Text(
+                                  'Cantidad disponible: ${bestSellingProduct.availableQuantity}'),
+                              const SizedBox(height: 5),
+                              Text('Costo: \$${bestSellingProduct.price}'),
                             ],
                           ),
                         ),
@@ -246,7 +264,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     const SizedBox(height: 10),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        // Acción al comprar el producto
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Producto comprado')),
+                        );
+                      },
                       child: const Text('Comprar'),
                     ),
                   ],

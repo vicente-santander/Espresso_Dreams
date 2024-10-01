@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-
-class Product {
-  String name;
-  String description;
-  int price;
-  int quantity;
-
-  Product(this.name, this.description, this.price, this.quantity);
-}
+import 'package:espresso_dreams/models/product_class.dart';
 
 class SellProductsPage extends StatefulWidget {
   const SellProductsPage({super.key});
@@ -72,7 +64,7 @@ class _SellProductsPageState extends State<SellProductsPage> {
             ),
             title: Text(products[index].name),
             subtitle: Text(
-                '${products[index].description} (Cantidad: ${products[index].quantity})'),
+                '${products[index].description} (Cantidad: ${products[index].availableQuantity})'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -155,12 +147,27 @@ class _SellProductsPageState extends State<SellProductsPage> {
             ),
             TextButton(
               onPressed: () {
-                _addProduct(
+                final newProduct = Product.addProduct(
                   productNameController.text,
                   productDescriptionController.text,
                   productPriceController.text,
                   productQuantityController.text,
                 );
+
+                if (newProduct != null) {
+                  setState(() {
+                    products.add(
+                        newProduct); // Agregar el producto solo si no es null
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Por favor complete todos los campos correctamente.'),
+                    ),
+                  );
+                }
+
                 Navigator.of(context).pop();
               },
               child: const Text('Agregar'),
@@ -179,7 +186,8 @@ class _SellProductsPageState extends State<SellProductsPage> {
     final TextEditingController productPriceController =
         TextEditingController(text: products[index].price.toString());
     final TextEditingController productQuantityController =
-        TextEditingController(text: products[index].quantity.toString());
+        TextEditingController(
+            text: products[index].availableQuantity.toString());
 
     showDialog(
       context: context,
@@ -252,37 +260,6 @@ class _SellProductsPageState extends State<SellProductsPage> {
     );
   }
 
-  void _addProduct(
-      String name, String description, String priceText, String quantityText) {
-    if (name.isEmpty ||
-        description.isEmpty ||
-        priceText.isEmpty ||
-        quantityText.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor complete todos los campos'),
-        ),
-      );
-      return;
-    }
-
-    int? price = int.tryParse(priceText);
-    int? quantity = int.tryParse(quantityText);
-    if (price == null || quantity == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('El precio y la cantidad deben ser números enteros válidos'),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      products.add(Product(name, description, price, quantity));
-    });
-  }
-
   void _editProduct(int index, String name, String description,
       String priceText, String quantityText) {
     if (name.isEmpty ||
@@ -310,10 +287,8 @@ class _SellProductsPageState extends State<SellProductsPage> {
     }
 
     setState(() {
-      products[index].name = name;
-      products[index].description = description;
-      products[index].price = price;
-      products[index].quantity = quantity;
+      products[index].edit(name, description, price,
+          quantity); // Llama al método de la clase Product
     });
   }
 }

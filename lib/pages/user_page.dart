@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-class Usuario {
-  final String nombre;
-  final String correo;
-  final int numeroDeRecetas;
-  final double promedioDeRecetas;
-
-  Usuario({
-    required this.nombre,
-    required this.correo,
-    required this.numeroDeRecetas,
-    required this.promedioDeRecetas,
-  });
-}
+import 'package:espresso_dreams/models/user_class.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -37,7 +24,6 @@ class _UserPageState extends State<UserPage> {
       context: context,
       builder: (BuildContext context) {
         String nuevoNombre = usuario.nombre;
-        String nuevoCorreo = usuario.correo;
 
         return AlertDialog(
           title: const Text('Editar Información'),
@@ -63,12 +49,7 @@ class _UserPageState extends State<UserPage> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  usuario = Usuario(
-                    nombre: nuevoNombre,
-                    correo: nuevoCorreo,
-                    numeroDeRecetas: usuario.numeroDeRecetas,
-                    promedioDeRecetas: usuario.promedioDeRecetas,
-                  );
+                  usuario.editarUsuario(nuevoNombre: nuevoNombre);
                 });
                 Navigator.of(context).pop();
               },

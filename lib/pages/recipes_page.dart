@@ -1,14 +1,5 @@
 import 'package:flutter/material.dart';
-
-class Recipe {
-  final String name; // Nombre de la receta
-  final String ingredients; // Ingredientes de la receta
-  final String preparation; // Instrucciones de preparación
-  List<double> ratings; // Lista de calificaciones
-
-  // Constructor que inicializa el nombre, ingredientes y preparación
-  Recipe(this.name, this.ingredients, this.preparation) : ratings = [];
-}
+import 'package:espresso_dreams/models/recipe_class.dart';
 
 // Página que muestra la lista de recetas
 class RecipesPage extends StatefulWidget {
@@ -237,7 +228,7 @@ class _RecipesPageState extends State<RecipesPage> {
                                 ),
                                 const SizedBox(height: 16),
 
-                                _buildRatingSection(
+                                _buildRating(
                                     index), // Sección de calificaciones
                               ],
                             ),
@@ -255,17 +246,14 @@ class _RecipesPageState extends State<RecipesPage> {
   }
 
   // Método para construir la sección de calificaciones
-  Widget _buildRatingSection(int index) {
-    double averageRating = recipes[index].ratings.isNotEmpty
-        ? recipes[index].ratings.reduce((a, b) => a + b) /
-            recipes[index].ratings.length // Calcular promedio
-        : 0.0; // Promedio por defecto
-    int ratingCount = recipes[index].ratings.length; // Contar calificaciones
+  Widget _buildRating(int index) {
+    double averageRating = recipes[index].getAverageRating();
+    int ratingCount = recipes[index].getRatingCount();
 
     return Column(
       children: [
         Text(
-          'Promedio: ${averageRating.toStringAsFixed(1)} ($ratingCount calificaciones)', // Mostrar promedio y número de calificaciones
+          'Promedio: ${averageRating.toStringAsFixed(1)} ($ratingCount calificaciones)',
           style: const TextStyle(fontSize: 14),
         ),
         Row(
@@ -275,15 +263,13 @@ class _RecipesPageState extends State<RecipesPage> {
             return IconButton(
               icon: Icon(
                 starIndex < averageRating.floor()
-                    ? Icons.star // Estrella llena si está calificado
-                    : Icons.star_border, // Estrella vacía si no está calificado
+                    ? Icons.star
+                    : Icons.star_border,
                 color: Colors.amber,
               ),
               onPressed: () {
                 setState(() {
-                  recipes[index]
-                      .ratings
-                      .add((starIndex + 1).toDouble()); // Agregar calificación
+                  recipes[index].addRating((starIndex + 1).toDouble());
                 });
               },
             );

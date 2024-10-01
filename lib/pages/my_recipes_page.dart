@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-
-class Recipe {
-  String name;
-  String ingredients;
-  String preparation;
-  List<double> ratings;
-
-  Recipe(this.name, this.ingredients, this.preparation) : ratings = [];
-}
+import 'package:espresso_dreams/models/recipe_class.dart';
 
 class MyRecipesPage extends StatefulWidget {
   const MyRecipesPage({super.key});
@@ -87,21 +79,21 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
           ),
           actions: [
             TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
+            ),
+            TextButton(
               onPressed: () {
                 setState(() {
-                  filteredRecipes[index].name = nameController.text;
-                  filteredRecipes[index].ingredients =
-                      ingredientsController.text;
-                  filteredRecipes[index].preparation =
-                      preparationController.text;
+                  filteredRecipes[index].updateRecipe(
+                    newName: nameController.text,
+                    newIngredients: ingredientsController.text,
+                    newPreparation: preparationController.text,
+                  );
                 });
                 Navigator.of(context).pop();
               },
               child: const Text('Guardar'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
             ),
           ],
         );
@@ -308,15 +300,14 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  // Agregar la nueva receta a la lista
-                  Recipe newRecipe = Recipe(
+                  Recipe newRecipe = Recipe.createNewRecipe(
                     nameController.text,
                     ingredientsController.text,
                     preparationController.text,
                   );
-                  savedRecipes.add(newRecipe); // Cambia recipes a savedRecipes
-                  favoriteStatus.add(false); // Agregar estado de favorito
-                  expandedStatus.add(false); // Agregar estado de expansión
+                  savedRecipes.add(newRecipe);
+                  favoriteStatus.add(false);
+                  expandedStatus.add(false);
                   filteredRecipes = savedRecipes; // Resetea la lista filtrada
                 });
                 Navigator.of(context).pop();
@@ -330,11 +321,8 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
   }
 
   Widget _buildRating(int index) {
-    double averageRating = savedRecipes[index].ratings.isNotEmpty
-        ? savedRecipes[index].ratings.reduce((a, b) => a + b) /
-            savedRecipes[index].ratings.length
-        : 0.0;
-    int ratingCount = savedRecipes[index].ratings.length;
+    double averageRating = savedRecipes[index].getAverageRating();
+    int ratingCount = savedRecipes[index].getRatingCount();
 
     return Column(
       children: [
@@ -354,7 +342,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               ),
               onPressed: () {
                 setState(() {
-                  savedRecipes[index].ratings.add((starIndex + 1).toDouble());
+                  savedRecipes[index].addRating((starIndex + 1).toDouble());
                 });
               },
             );
