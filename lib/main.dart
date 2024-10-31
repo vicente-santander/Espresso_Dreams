@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:espresso_dreams/pages/splash_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 

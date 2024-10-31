@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:espresso_dreams/pages/user_page.dart';
 import 'package:espresso_dreams/pages/recipes_page.dart';
-import 'package:espresso_dreams/pages/product_page.dart';
-import 'package:espresso_dreams/pages/forum_page.dart';
 import 'package:espresso_dreams/pages/saved_recipes_page.dart';
 import 'package:espresso_dreams/pages/my_recipes_page.dart';
-import 'package:espresso_dreams/pages/sell_product_page.dart';
 import 'package:espresso_dreams/models/recipe_class.dart';
 import 'package:espresso_dreams/models/product_class.dart';
 
@@ -118,42 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.shopping_cart),
-              title: const Text('Comprar'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProductsPage(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sell),
-              title: const Text('Vender productos'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SellProductsPage(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.forum),
-              title: const Text('Foro'),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ForumPage(),
-                  ),
-                );
-              },
-            ),
           ],
         ),
       ),
@@ -212,65 +173,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           },
                         ),
                       ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Card para el producto más vendido usando la clase Product
-            Card(
-              margin: const EdgeInsets.all(16.0),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image.asset(
-                          'assets/icons/cafetera.jpeg',
-                          width: 100,
-                          height: 100,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Producto más vendido',
-                                style: TextStyle(
-                                    fontSize: 20, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                bestSellingProduct
-                                    .name, // Usa el nombre del producto
-                                style: const TextStyle(fontSize: 18),
-                              ),
-                              const SizedBox(height: 5),
-                              Text(bestSellingProduct
-                                  .description), // Usa la descripción
-                              const SizedBox(height: 5),
-                              Text(
-                                  'Cantidad disponible: ${bestSellingProduct.availableQuantity}'),
-                              const SizedBox(height: 5),
-                              Text('Costo: \$${bestSellingProduct.price}'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Acción al comprar el producto
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Producto comprado')),
-                        );
-                      },
-                      child: const Text('Comprar'),
                     ),
                   ],
                 ),

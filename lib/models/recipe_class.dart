@@ -1,10 +1,35 @@
 class Recipe {
+  int? id; // Agregar un campo id para la base de datos
   String name;
   String ingredients;
   String preparation;
+  String? image;
   List<double> ratings;
+  bool isfavorite;
 
-  Recipe(this.name, this.ingredients, this.preparation) : ratings = [];
+  Recipe(this.name, this.ingredients, this.preparation, {this.image})
+      : ratings = [],
+        isfavorite = false;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'ingredients': ingredients,
+      'preparation': preparation,
+      'image': image,
+    };
+  }
+
+  // Método para crear una receta desde un mapa
+  Recipe.fromMap(Map<String, dynamic> map)
+      : id = map['id'],
+        name = map['name'],
+        ingredients = map['ingredients'],
+        preparation = map['preparation'],
+        image = map['image'],
+        ratings = [],
+        isfavorite = false;
 
   // Método para actualizar la receta
   void updateRecipe({
