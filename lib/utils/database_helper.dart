@@ -24,14 +24,16 @@ class DatabaseHelper {
       version: 1,
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE recipes(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            ingredients TEXT,
-            preparation TEXT,
-            image TEXT
-          )
-        ''');
+        CREATE TABLE recipes(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT,
+          ingredients TEXT,
+          preparation TEXT,
+          image TEXT,
+          isFavorite INTEGER DEFAULT 0,
+          isMine INTEGER DEFAULT 0 
+        )
+      ''');
       },
     );
   }
@@ -50,12 +52,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query('recipes');
 
     return List.generate(maps.length, (i) {
-      return Recipe(
-        maps[i]['name'],
-        maps[i]['ingredients'],
-        maps[i]['preparation'],
-        image: maps[i]['image'],
-      )..ratings = []; // Inicializa las calificaciones como vacío
+      return Recipe.fromMap(maps[i]);
     });
   }
 
@@ -76,5 +73,29 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<bool> recipeExists(String name) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'recipes',
+      where: 'name = ?',
+      whereArgs: [name],
+    );
+
+    return maps.isNotEmpty; // Devuelve true si ya existe
+  }
+
+  Future<List<Recipe>> getFavoriteRecipes() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'recipes',
+      where: 'isFavorite = ?',
+      whereArgs: [1],
+    );
+
+    return List.generate(maps.length, (i) {
+      return Recipe.fromMap(maps[i]);
+    });
   }
 }

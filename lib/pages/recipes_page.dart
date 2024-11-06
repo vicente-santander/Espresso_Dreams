@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:espresso_dreams/models/recipe_class.dart';
+import 'package:espresso_dreams/utils/database_helper.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart'; // Asegúrate de importar path
 
-// Página que muestra la lista de recetas
 class RecipesPage extends StatefulWidget {
   const RecipesPage({super.key});
 
@@ -10,40 +12,7 @@ class RecipesPage extends StatefulWidget {
 }
 
 class _RecipesPageState extends State<RecipesPage> {
-  // Lista de recetas
-  List<Recipe> recipes = [
-    Recipe(
-      'Café Americano',
-      '• Agua\n• Café molido',
-      '1. Hervir agua\n2. Agregar café molido\n3. Revolver y servir.',
-    )..ratings.addAll([5, 5]), // Calificación de 5
-    Recipe(
-      'Café Latte',
-      '• Café expreso\n• Leche caliente\n• Espuma de leche',
-      '1. Preparar café expreso.\n2. Agregar leche caliente.\n3. Cubrir con espuma de leche.',
-    )..ratings.addAll([5, 5]), // Calificación de 5
-    Recipe(
-      'Café Mocha',
-      '• Café expreso\n• Chocolate caliente\n• Leche\n• Crema batida',
-      '1. Preparar café expreso.\n2. Mezclar con chocolate caliente.\n3. Agregar leche y cubrir con crema.',
-    ),
-    Recipe(
-      'Café Frappé',
-      '• Café frío\n• Azúcar\n• Hielo\n• Leche',
-      '1. Mezclar café frío, azúcar, y hielo en una licuadora.\n2. Servir con leche.',
-    ),
-    Recipe(
-      'Café con Leche',
-      '• Café\n• Leche\n• Azúcar (opcional)',
-      '1. Preparar café.\n2. Mezclar con leche caliente.\n3. Agregar azúcar si se desea.',
-    ),
-    Recipe(
-      'Café Irlandés',
-      '• Café caliente\n• Whisky\n• Azúcar\n• Crema',
-      '1. Preparar café caliente.\n2. Mezclar con whisky y azúcar.\n3. Cubrir con crema.',
-    ),
-  ];
-
+  List<Recipe> recipes = [];
   List<bool> favoriteStatus = []; // Estado de favorito para cada receta
   List<bool> expandedStatus = []; // Estado expandido para cada receta
   List<Recipe> filteredRecipes = []; // Para almacenar las recetas filtradas
@@ -53,13 +22,61 @@ class _RecipesPageState extends State<RecipesPage> {
   @override
   void initState() {
     super.initState();
-    // Inicializar el estado de favoritos y expandido
-    favoriteStatus = List.generate(recipes.length, (_) => false);
-    expandedStatus = List.generate(recipes.length, (_) => false);
-    filteredRecipes =
-        recipes; // Inicialmente, todas las recetas están filtradas
+    _insertInitialRecipes().then((_) {
+      _loadRecipes(); // Cargar recetas después de insertar las iniciales
+    });
     searchController.addListener(
         _filterRecipes); // Escuchar cambios en el campo de búsqueda
+  }
+
+  Future<void> _loadRecipes() async {
+    recipes = await DatabaseHelper()
+        .getRecipes(); // Obtener recetas de la base de datos
+    setState(() {
+      favoriteStatus =
+          List.generate(recipes.length, (index) => recipes[index].isFavorite);
+      expandedStatus = List.generate(recipes.length, (_) => false);
+      filteredRecipes =
+          recipes; // Inicialmente, todas las recetas están filtradas
+    });
+  }
+
+  Future<void> _insertInitialRecipes() async {
+    // Crear recetas iniciales
+    List<Recipe> initialRecipes = [
+      Recipe.createNewRecipe(
+        'Café Americano',
+        'Agua caliente, café molido',
+        'Preparar café filtrado y añadir agua caliente.',
+        image: 'assets/images/americano-1024x682.jpg', // Ruta de la imagen
+      ),
+      Recipe.createNewRecipe(
+        'Cappuccino',
+        'Café expreso, leche vaporizada, espuma de leche',
+        'Mezclar café expreso con leche vaporizada y añadir espuma por encima.',
+        image: 'assets/images/Cappuccino.jpeg',
+      ),
+      Recipe.createNewRecipe(
+        'Latte',
+        'Café expreso, leche vaporizada',
+        'Combinar café expreso con leche vaporizada.',
+        image: 'assets/images/Latte.jpeg',
+      ),
+      Recipe.createNewRecipe(
+        'Mocha',
+        'Café expreso, leche vaporizada, jarabe de chocolate',
+        'Mezclar café expreso con leche vaporizada y añadir jarabe de chocolate.',
+        image: 'assets/images/Mocha.jpeg',
+      ),
+    ];
+
+    // Insertar cada receta en la base de datos
+    for (var recipe in initialRecipes) {
+      bool exists = await DatabaseHelper().recipeExists(recipe.name);
+      if (!exists) {
+        await DatabaseHelper().insertRecipe(recipe);
+      }
+    }
   }
 
   // Método para filtrar recetas según la consulta de búsqueda
@@ -67,7 +84,6 @@ class _RecipesPageState extends State<RecipesPage> {
     String query =
         searchController.text.toLowerCase(); // Obtener texto en minúsculas
     setState(() {
-      // Filtrar las recetas que contienen la consulta
       filteredRecipes = recipes.where((recipe) {
         return recipe.name.toLowerCase().contains(query);
       }).toList();
@@ -146,11 +162,17 @@ class _RecipesPageState extends State<RecipesPage> {
                                       favoriteStatus[index] ? Colors.red : null,
                                   size: 24,
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   setState(() {
-                                    favoriteStatus[index] = !favoriteStatus[
-                                        index]; // Cambia el estado de favorito
+                                    favoriteStatus[index] =
+                                        !favoriteStatus[index];
+                                    filteredRecipes[index].isFavorite =
+                                        favoriteStatus[index];
                                   });
+
+                                  // Actualiza el estado en la base de datos
+                                  await DatabaseHelper()
+                                      .updateRecipe(filteredRecipes[index]);
                                 },
                               ),
                               // Botón para compartir receta
@@ -211,6 +233,12 @@ class _RecipesPageState extends State<RecipesPage> {
                                 Text(filteredRecipes[index]
                                     .preparation), // Preparación de la receta
                                 const SizedBox(height: 16),
+                                // Mostrar imagen de la receta
+                                filteredRecipes[index].image != null
+                                    ? Image.asset(filteredRecipes[index].image!)
+                                    : const SizedBox
+                                        .shrink(), // Si no hay imagen, mostrar nada
+                                const SizedBox(height: 16),
                                 const Text(
                                   'Productos Recomendados',
                                   style: TextStyle(
@@ -227,7 +255,6 @@ class _RecipesPageState extends State<RecipesPage> {
                                   ],
                                 ),
                                 const SizedBox(height: 16),
-
                                 _buildRating(
                                     index), // Sección de calificaciones
                               ],
@@ -242,7 +269,31 @@ class _RecipesPageState extends State<RecipesPage> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await deleteLocalDatabase(); // Llama a la función para eliminar la base de datos
+        },
+        backgroundColor: Colors.red,
+        child: const Icon(Icons.delete), // Color del botón flotante
+      ),
     );
+  }
+
+  Future<void> deleteLocalDatabase() async {
+    // Obtén el path de la base de datos
+    String path = join(await getDatabasesPath(), 'recipes.db');
+
+    // Verifica si la base de datos está abierta y cierra si es necesario
+    Database db = await openDatabase(path);
+
+    // Cierra la base de datos
+    await db.close();
+
+    // Ahora elimina la base de datos
+    await deleteDatabase(path);
+
+    // Opcional: vuelve a cargar las recetas si lo deseas
+    await _loadRecipes(); // Asegúrate de que esto esté bien manejado
   }
 
   // Método para construir la sección de calificaciones
@@ -270,6 +321,8 @@ class _RecipesPageState extends State<RecipesPage> {
               onPressed: () {
                 setState(() {
                   recipes[index].addRating((starIndex + 1).toDouble());
+                  DatabaseHelper().updateRecipe(recipes[
+                      index]); // Actualizar la receta en la base de datos
                 });
               },
             );

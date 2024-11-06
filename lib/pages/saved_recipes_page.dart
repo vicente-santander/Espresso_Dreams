@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:espresso_dreams/models/recipe_class.dart';
+import 'package:espresso_dreams/utils/database_helper.dart';
 
 class SavedRecipesPage extends StatefulWidget {
   const SavedRecipesPage({super.key});
@@ -9,44 +10,30 @@ class SavedRecipesPage extends StatefulWidget {
 }
 
 class _SavedRecipesPageState extends State<SavedRecipesPage> {
-  // Lista de recetas guardadas
-  List<Recipe> savedRecipes = [
-    Recipe(
-      'Café Americano',
-      '• Agua\n• Café molido',
-      '1. Hervir agua\n2. Agregar café molido\n3. Revolver y servir.',
-    )..ratings.addAll([5, 5]), // Calificación de 5
-    Recipe(
-      'Café Latte',
-      '• Café expreso\n• Leche caliente\n• Espuma de leche',
-      '1. Preparar café expreso.\n2. Agregar leche caliente.\n3. Cubrir con espuma de leche.',
-    )..ratings.addAll([5, 5]), // Calificación de 5
-    Recipe(
-      'Café Mocha',
-      '• Café expreso\n• Chocolate caliente\n• Leche\n• Crema batida',
-      '1. Preparar café expreso.\n2. Mezclar con chocolate caliente.\n3. Agregar leche y cubrir con crema.',
-    ),
-  ];
-
-  List<bool> favoriteStatus = [];
+  List<Recipe> favoriteRecipes = [];
   List<bool> expandedStatus = [];
-  List<Recipe> filteredRecipes = []; // Para almacenar las recetas filtradas
   final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    favoriteStatus = List.generate(savedRecipes.length, (_) => true);
-    expandedStatus = List.generate(savedRecipes.length, (_) => false);
-    filteredRecipes =
-        savedRecipes; // Inicialmente, todas las recetas están filtradas
+    _loadFavoriteRecipes(); // Carga las recetas favoritas desde la base de datos
     searchController.addListener(_filterRecipes);
+  }
+
+  Future<void> _loadFavoriteRecipes() async {
+    final dbHelper = DatabaseHelper();
+    List<Recipe> favorites = await dbHelper.getFavoriteRecipes();
+    setState(() {
+      favoriteRecipes = favorites;
+      expandedStatus = List.generate(favoriteRecipes.length, (_) => false);
+    });
   }
 
   void _filterRecipes() {
     String query = searchController.text.toLowerCase();
     setState(() {
-      filteredRecipes = savedRecipes.where((recipe) {
+      favoriteRecipes = favoriteRecipes.where((recipe) {
         return recipe.name.toLowerCase().contains(query);
       }).toList();
     });
@@ -56,14 +43,13 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Recetas Guardadas'),
+        title: const Text('Recetas Favoritas'),
         backgroundColor: const Color.fromARGB(255, 174, 97, 71),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // Buscador de recetas
             TextField(
               controller: searchController,
               decoration: const InputDecoration(
@@ -75,9 +61,9 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount: filteredRecipes.length + 1,
+                itemCount: favoriteRecipes.length + 1,
                 itemBuilder: (context, index) {
-                  if (index == filteredRecipes.length) {
+                  if (index == favoriteRecipes.length) {
                     return const SizedBox(height: 80);
                   }
 
@@ -100,7 +86,7 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      filteredRecipes[index].name,
+                                      favoriteRecipes[index].name,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -109,22 +95,6 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
                                     const SizedBox(height: 8),
                                   ],
                                 ),
-                              ),
-                              IconButton(
-                                icon: Icon(
-                                  favoriteStatus[index]
-                                      ? Icons.favorite
-                                      : Icons.favorite_border_sharp,
-                                  color:
-                                      favoriteStatus[index] ? Colors.red : null,
-                                  size: 24,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    favoriteStatus[index] =
-                                        !favoriteStatus[index];
-                                  });
-                                },
                               ),
                               IconButton(
                                 icon: const Icon(
@@ -167,7 +137,7 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
                                     fontSize: 16,
                                   ),
                                 ),
-                                Text(filteredRecipes[index].ingredients),
+                                Text(favoriteRecipes[index].ingredients),
                                 const SizedBox(height: 8),
                                 const Text(
                                   'Preparación:',
@@ -176,7 +146,7 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
                                     fontSize: 16,
                                   ),
                                 ),
-                                Text(filteredRecipes[index].preparation),
+                                Text(favoriteRecipes[index].preparation),
                                 const SizedBox(height: 16),
                                 const Text(
                                   'Calificaciones:',
@@ -202,8 +172,8 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
   }
 
   Widget _buildRating(int index) {
-    double averageRating = savedRecipes[index].getAverageRating();
-    int ratingCount = savedRecipes[index].getRatingCount();
+    double averageRating = favoriteRecipes[index].getAverageRating();
+    int ratingCount = favoriteRecipes[index].getRatingCount();
 
     return Column(
       children: [
@@ -223,7 +193,7 @@ class _SavedRecipesPageState extends State<SavedRecipesPage> {
               ),
               onPressed: () {
                 setState(() {
-                  savedRecipes[index].addRating((starIndex + 1).toDouble());
+                  favoriteRecipes[index].addRating((starIndex + 1).toDouble());
                 });
               },
             );

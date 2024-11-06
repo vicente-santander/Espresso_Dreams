@@ -1,5 +1,10 @@
+import 'dart:io';
+
+import 'package:camera/camera.dart';
+import 'package:espresso_dreams/utils/camera_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:espresso_dreams/models/recipe_class.dart';
+import 'package:espresso_dreams/utils/database_helper.dart';
 
 class MyRecipesPage extends StatefulWidget {
   const MyRecipesPage({super.key});
@@ -9,31 +14,54 @@ class MyRecipesPage extends StatefulWidget {
 }
 
 class _MyRecipesPageState extends State<MyRecipesPage> {
-  List<Recipe> savedRecipes = [
-    Recipe(
-      'Café Americano',
-      '• Agua\n• Café molido',
-      '1. Hervir agua\n2. Agregar café molido\n3. Revolver y servir.',
-    )..ratings.addAll([5, 5]),
-    Recipe(
-      'Café con Leche',
-      '• Café\n• Leche\n• Azúcar (opcional)',
-      '1. Preparar café.\n2. Mezclar con leche caliente.\n3. Agregar azúcar si se desea.',
-    ),
-  ];
-
+  List<Recipe> savedRecipes = [];
+  List<Recipe> filteredRecipes = [];
   List<bool> favoriteStatus = [];
   List<bool> expandedStatus = [];
-  List<Recipe> filteredRecipes = [];
   final TextEditingController searchController = TextEditingController();
+  final DatabaseHelper dbHelper = DatabaseHelper();
+
+  late CameraController _cameraController; // Agregamos el controlador de cámara
+  late Future<void>
+      // ignore: unused_field
+      _initializeCameraFuture; // Variable para manejar la inicialización
 
   @override
   void initState() {
     super.initState();
-    favoriteStatus = List.generate(savedRecipes.length, (_) => false);
-    expandedStatus = List.generate(savedRecipes.length, (_) => false);
-    filteredRecipes = savedRecipes;
+    _loadSavedRecipes(); // Cargar recetas desde la base de datos
     searchController.addListener(_filterRecipes);
+    _initializeCamera(); // Inicializar la cámara
+  }
+
+  Future<void> _initializeCamera() async {
+    // Obtén la lista de cámaras disponibles y selecciona la primera cámara.
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
+
+    // Crea y guarda una instancia del controlador de cámara.
+    _cameraController = CameraController(
+      firstCamera,
+      ResolutionPreset.high,
+    );
+
+    // Inicializa el controlador de cámara y maneja la excepción si falla.
+    _initializeCameraFuture = _cameraController.initialize().catchError((e) {
+      // Maneja el error si no se puede inicializar la cámara.
+      // ignore: avoid_print
+      print('Error al inicializar la cámara: $e');
+    });
+  }
+
+  Future<void> _loadSavedRecipes() async {
+    final recipes = await dbHelper.getRecipes();
+    setState(() {
+      savedRecipes = recipes.where((recipe) => recipe.isMine).toList();
+      filteredRecipes = savedRecipes;
+      favoriteStatus = List.generate(
+          savedRecipes.length, (index) => savedRecipes[index].isFavorite);
+      expandedStatus = List.generate(savedRecipes.length, (_) => false);
+    });
   }
 
   void _filterRecipes() {
@@ -45,19 +73,22 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
     });
   }
 
-  void _editRecipe(int index) {
-    final TextEditingController nameController =
-        TextEditingController(text: filteredRecipes[index].name);
-    final TextEditingController ingredientsController =
-        TextEditingController(text: filteredRecipes[index].ingredients);
-    final TextEditingController preparationController =
-        TextEditingController(text: filteredRecipes[index].preparation);
+  Future<void> _addRecipe() async {
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController ingredientsController = TextEditingController();
+    final TextEditingController preparationController = TextEditingController();
+    XFile? recipeImage;
+
+    // Obtén la lista de cámaras disponibles y selecciona la primera cámara.
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
 
     showDialog(
+      // ignore: use_build_context_synchronously
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Editar Receta'),
+          title: const Text('Agregar Nueva Receta'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -68,12 +99,36 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               TextField(
                 controller: ingredientsController,
                 decoration: const InputDecoration(labelText: 'Ingredientes'),
-                maxLines: 3, // Permitir múltiples líneas
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
               ),
               TextField(
                 controller: preparationController,
                 decoration: const InputDecoration(labelText: 'Preparación'),
-                maxLines: 3, // Permitir múltiples líneas
+                maxLines: null,
+                keyboardType: TextInputType.multiline,
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.camera_alt),
+                label: const Text('Tomar Foto'),
+                onPressed: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          TakePictureScreen(camera: firstCamera),
+                    ),
+                  );
+
+                  if (result != null) {
+                    recipeImage = result as XFile;
+                    // ignore: use_build_context_synchronously
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Foto capturada')),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -84,16 +139,18 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  filteredRecipes[index].updateRecipe(
-                    newName: nameController.text,
-                    newIngredients: ingredientsController.text,
-                    newPreparation: preparationController.text,
-                  );
-                });
+                final newRecipe = Recipe.createNewRecipe(
+                  nameController.text,
+                  ingredientsController.text,
+                  preparationController.text,
+                  image: recipeImage?.path,
+                );
+                newRecipe.isMine = true;
+                dbHelper.insertRecipe(newRecipe);
                 Navigator.of(context).pop();
+                _loadSavedRecipes();
               },
-              child: const Text('Guardar'),
+              child: const Text('Agregar'),
             ),
           ],
         );
@@ -123,12 +180,8 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount: filteredRecipes.length + 1,
+                itemCount: filteredRecipes.length,
                 itemBuilder: (context, index) {
-                  if (index == filteredRecipes.length) {
-                    return const SizedBox(height: 80);
-                  }
-
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Padding(
@@ -175,20 +228,11 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                                   setState(() {
                                     favoriteStatus[index] =
                                         !favoriteStatus[index];
+                                    filteredRecipes[index].isFavorite =
+                                        favoriteStatus[index];
+                                    dbHelper
+                                        .updateRecipe(filteredRecipes[index]);
                                   });
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.share,
-                                  size: 24,
-                                ),
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Compartiendo receta'),
-                                    ),
-                                  );
                                 },
                               ),
                               IconButton(
@@ -230,6 +274,17 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                                 ),
                                 Text(filteredRecipes[index].preparation),
                                 const SizedBox(height: 16),
+                                // Aquí agregamos la imagen de la receta
+                                if (filteredRecipes[index].image !=
+                                    null) // Verifica si hay una imagen
+                                  Image.file(
+                                    File(filteredRecipes[index].image!),
+                                    height:
+                                        200, // Ajusta la altura según lo necesites
+                                    fit: BoxFit
+                                        .cover, // Ajusta el ajuste según lo necesites
+                                  ),
+                                const SizedBox(height: 16),
                                 const Text(
                                   'Calificaciones:',
                                   style: TextStyle(
@@ -252,23 +307,25 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addRecipe,
-        backgroundColor: const Color.fromARGB(
-            255, 174, 97, 71), // Llama al método para agregar recetas
+        backgroundColor: const Color.fromARGB(255, 174, 97, 71),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  void _addRecipe() {
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController ingredientsController = TextEditingController();
-    final TextEditingController preparationController = TextEditingController();
+  void _editRecipe(int index) {
+    final TextEditingController nameController =
+        TextEditingController(text: filteredRecipes[index].name);
+    final TextEditingController ingredientsController =
+        TextEditingController(text: filteredRecipes[index].ingredients);
+    final TextEditingController preparationController =
+        TextEditingController(text: filteredRecipes[index].preparation);
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Agregar Nueva Receta'),
+          title: const Text('Editar Receta'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -279,40 +336,33 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               TextField(
                 controller: ingredientsController,
                 decoration: const InputDecoration(labelText: 'Ingredientes'),
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
+                maxLines: 3,
               ),
               TextField(
                 controller: preparationController,
                 decoration: const InputDecoration(labelText: 'Preparación'),
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
+                maxLines: 3,
               ),
             ],
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 setState(() {
-                  Recipe newRecipe = Recipe.createNewRecipe(
-                    nameController.text,
-                    ingredientsController.text,
-                    preparationController.text,
+                  filteredRecipes[index].updateRecipe(
+                    newName: nameController.text,
+                    newIngredients: ingredientsController.text,
+                    newPreparation: preparationController.text,
                   );
-                  savedRecipes.add(newRecipe);
-                  favoriteStatus.add(false);
-                  expandedStatus.add(false);
-                  filteredRecipes = savedRecipes; // Resetea la lista filtrada
+                  dbHelper.updateRecipe(filteredRecipes[index]);
                 });
                 Navigator.of(context).pop();
               },
-              child: const Text('Agregar'),
+              child: const Text('Guardar'),
             ),
           ],
         );
@@ -321,8 +371,8 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
   }
 
   Widget _buildRating(int index) {
-    double averageRating = savedRecipes[index].getAverageRating();
-    int ratingCount = savedRecipes[index].getRatingCount();
+    double averageRating = filteredRecipes[index].getAverageRating();
+    int ratingCount = filteredRecipes[index].getRatingCount();
 
     return Column(
       children: [
@@ -342,7 +392,8 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               ),
               onPressed: () {
                 setState(() {
-                  savedRecipes[index].addRating((starIndex + 1).toDouble());
+                  filteredRecipes[index].addRating((starIndex + 1).toDouble());
+                  dbHelper.updateRecipe(filteredRecipes[index]);
                 });
               },
             );

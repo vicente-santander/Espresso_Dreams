@@ -38,6 +38,8 @@ dependencies:
   flutter_svg: ^2.0.10+1
   sqflite: ^2.4.0
   path: ^1.9.0
+  camera: ^0.11.0+2
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +73,11 @@ flutter:
      - assets/images/cafe-dalgona-caliente-500x427.jpg
      - assets/images/cafe-especiado-500x461.png
      - assets/images/latte-chocolate-500x591.jpg
+     - assets/images/americano-1024x682.jpg
+     - assets/images/Cappuccino.jpeg
+     - assets/images/Latte.jpeg
+     - assets/images/Mocha.jpeg
+     - assets/images/retro-vintage-hand-drawn-coffee-cup-with-coffee-bean-for-cafe-restaurant-or-farm-product-logo-design-vector.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
