@@ -6,7 +6,10 @@ class Recipe {
   String? image;
   List<double> ratings = [];
   bool isFavorite;
-  bool isMine; // Este campo se guardará en la base de datos
+  bool isMine;
+  String dateCreated; // Fecha de registro
+  int preparationTime; // Tiempo de preparación en minutos
+  String associatedProducts; // Productos asociados
 
   Recipe(
     this.name,
@@ -15,6 +18,9 @@ class Recipe {
     this.image,
     this.isFavorite = false,
     this.isMine = false,
+    required this.dateCreated,
+    required this.preparationTime,
+    required this.associatedProducts,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +32,9 @@ class Recipe {
       'image': image,
       'isFavorite': isFavorite ? 1 : 0,
       'isMine': isMine ? 1 : 0,
+      'dateCreated': dateCreated,
+      'preparationTime': preparationTime,
+      'associatedProducts': associatedProducts
     };
   }
 
@@ -37,6 +46,9 @@ class Recipe {
       image: map['image'],
       isFavorite: map['isFavorite'] == 1,
       isMine: map['isMine'] == 1,
+      dateCreated: map['dateCreated'],
+      preparationTime: map['preparationTime'],
+      associatedProducts: map['associatedProducts'],
     )..id = map['id'];
   }
 
@@ -45,10 +57,14 @@ class Recipe {
     required String newName,
     required String newIngredients,
     required String newPreparation,
+    required int newPreparationTime,
+    required String newAssociatedProducts,
   }) {
     name = newName;
     ingredients = newIngredients;
     preparation = newPreparation;
+    preparationTime = newPreparationTime;
+    associatedProducts = newAssociatedProducts;
   }
 
   double getAverageRating() {
@@ -64,11 +80,23 @@ class Recipe {
     ratings.add(rating);
   }
 
-  // Método para crear una nueva receta
-  // Método para crear una nueva receta
   static Recipe createNewRecipe(
-      String name, String ingredients, String preparation,
-      {String? image}) {
-    return Recipe(name, ingredients, preparation, image: image);
+    String name,
+    String ingredients,
+    String preparation,
+    String dateCreated,
+    int preparationTime,
+    String associatedProducts,
+    String? path, // Aquí se usará el path directamente
+  ) {
+    return Recipe(
+      name,
+      ingredients,
+      preparation,
+      image: path, // Asignación del path al campo image
+      dateCreated: dateCreated,
+      preparationTime: preparationTime,
+      associatedProducts: associatedProducts,
+    );
   }
 }

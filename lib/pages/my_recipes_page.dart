@@ -1,4 +1,8 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'dart:io';
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:camera/camera.dart';
 import 'package:espresso_dreams/utils/camera_controller.dart';
@@ -35,20 +39,18 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
   }
 
   Future<void> _initializeCamera() async {
-    // Obtén la lista de cámaras disponibles y selecciona la primera cámara.
     final cameras = await availableCameras();
     final firstCamera = cameras.first;
 
-    // Crea y guarda una instancia del controlador de cámara.
     _cameraController = CameraController(
       firstCamera,
       ResolutionPreset.high,
     );
 
-    // Inicializa el controlador de cámara y maneja la excepción si falla.
-    _initializeCameraFuture = _cameraController.initialize().catchError((e) {
-      // Maneja el error si no se puede inicializar la cámara.
-      // ignore: avoid_print
+    _initializeCameraFuture = _cameraController.initialize().then((_) {
+      setState(
+          () {}); // Actualiza la interfaz de usuario después de inicializar
+    }).catchError((e) {
       print('Error al inicializar la cámara: $e');
     });
   }
@@ -73,64 +75,113 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
     });
   }
 
+  Future<String?> _saveImageToPersistentStorage(XFile imageFile) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final String newPath = '${directory.path}/${imageFile.name}';
+      await imageFile.saveTo(newPath);
+      return newPath;
+    } catch (e) {
+      print("Error al guardar la imagen de manera persistente: $e");
+      return null;
+    }
+  }
+
   Future<void> _addRecipe() async {
     final TextEditingController nameController = TextEditingController();
     final TextEditingController ingredientsController = TextEditingController();
     final TextEditingController preparationController = TextEditingController();
-    XFile? recipeImage;
+    final TextEditingController preparationTimeController =
+        TextEditingController();
+    final TextEditingController associatedProductsController =
+        TextEditingController();
+    // Variable para almacenar la imagen capturada
+    final ValueNotifier<XFile?> recipeImageNotifier =
+        ValueNotifier<XFile?>(null);
 
     // Obtén la lista de cámaras disponibles y selecciona la primera cámara.
     final cameras = await availableCameras();
     final firstCamera = cameras.first;
 
     showDialog(
-      // ignore: use_build_context_synchronously
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Agregar Nueva Receta'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nombre'),
-              ),
-              TextField(
-                controller: ingredientsController,
-                decoration: const InputDecoration(labelText: 'Ingredientes'),
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-              ),
-              TextField(
-                controller: preparationController,
-                decoration: const InputDecoration(labelText: 'Preparación'),
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Tomar Foto'),
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          TakePictureScreen(camera: firstCamera),
-                    ),
-                  );
-
-                  if (result != null) {
-                    recipeImage = result as XFile;
-                    // ignore: use_build_context_synchronously
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Foto capturada')),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Nombre'),
+                ),
+                TextField(
+                  controller: ingredientsController,
+                  decoration: const InputDecoration(labelText: 'Ingredientes'),
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                ),
+                TextField(
+                  controller: preparationController,
+                  decoration: const InputDecoration(labelText: 'Preparación'),
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                ),
+                TextField(
+                  controller: preparationTimeController,
+                  decoration: const InputDecoration(
+                      labelText: 'Tiempo de preparación (minutos)'),
+                  keyboardType: TextInputType.number,
+                ),
+                TextField(
+                  controller: associatedProductsController,
+                  decoration:
+                      const InputDecoration(labelText: 'Productos asociados'),
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.camera_alt),
+                  label: const Text('Tomar Foto'),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            TakePictureScreen(camera: firstCamera),
+                      ),
                     );
-                  }
-                },
-              ),
-            ],
+
+                    if (result != null) {
+                      recipeImageNotifier.value = result
+                          as XFile; // Actualiza el valor de ValueNotifier
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Foto capturada')),
+                      );
+                    }
+                  },
+                ),
+                ValueListenableBuilder<XFile?>(
+                  valueListenable: recipeImageNotifier,
+                  builder: (context, recipeImage, child) {
+                    if (recipeImage != null) {
+                      return Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          Image.file(
+                            File(recipeImage.path),
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        ],
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -138,13 +189,26 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                final String currentDate =
+                    DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                // Guarda la imagen en almacenamiento persistente
+                final imagePath = recipeImageNotifier.value != null
+                    ? await _saveImageToPersistentStorage(
+                        recipeImageNotifier.value!)
+                    : null;
+
                 final newRecipe = Recipe.createNewRecipe(
                   nameController.text,
                   ingredientsController.text,
                   preparationController.text,
-                  image: recipeImage?.path,
+                  currentDate,
+                  int.tryParse(preparationTimeController.text) ?? 0,
+                  associatedProductsController.text,
+                  imagePath, // Usa la nueva ruta de imagen persistente aquí
                 );
+
                 newRecipe.isMine = true;
                 dbHelper.insertRecipe(newRecipe);
                 Navigator.of(context).pop();
@@ -320,30 +384,48 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
         TextEditingController(text: filteredRecipes[index].ingredients);
     final TextEditingController preparationController =
         TextEditingController(text: filteredRecipes[index].preparation);
+    final TextEditingController preparationTimeController =
+        TextEditingController(
+            text: filteredRecipes[index].preparationTime.toString());
+    final TextEditingController associatedProductsController =
+        TextEditingController(text: filteredRecipes[index].associatedProducts);
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Editar Receta'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nombre'),
-              ),
-              TextField(
-                controller: ingredientsController,
-                decoration: const InputDecoration(labelText: 'Ingredientes'),
-                maxLines: 3,
-              ),
-              TextField(
-                controller: preparationController,
-                decoration: const InputDecoration(labelText: 'Preparación'),
-                maxLines: 3,
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Nombre'),
+                ),
+                TextField(
+                  controller: ingredientsController,
+                  decoration: const InputDecoration(labelText: 'Ingredientes'),
+                  maxLines: 3,
+                ),
+                TextField(
+                  controller: preparationController,
+                  decoration: const InputDecoration(labelText: 'Preparación'),
+                  maxLines: 3,
+                ),
+                TextField(
+                  controller: preparationTimeController,
+                  decoration: const InputDecoration(
+                      labelText: 'Tiempo de preparación (minutos)'),
+                  keyboardType: TextInputType.number,
+                ),
+                TextField(
+                  controller: associatedProductsController,
+                  decoration:
+                      const InputDecoration(labelText: 'Productos asociados'),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -357,6 +439,10 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                     newName: nameController.text,
                     newIngredients: ingredientsController.text,
                     newPreparation: preparationController.text,
+                    newPreparationTime:
+                        int.tryParse(preparationTimeController.text) ??
+                            filteredRecipes[index].preparationTime,
+                    newAssociatedProducts: associatedProductsController.text,
                   );
                   dbHelper.updateRecipe(filteredRecipes[index]);
                 });
@@ -406,6 +492,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
   @override
   void dispose() {
     searchController.dispose();
+    _cameraController.dispose();
     super.dispose();
   }
 }

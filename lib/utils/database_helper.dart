@@ -21,7 +21,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'recipes.db');
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE recipes(
@@ -31,9 +31,22 @@ class DatabaseHelper {
           preparation TEXT,
           image TEXT,
           isFavorite INTEGER DEFAULT 0,
-          isMine INTEGER DEFAULT 0 
+          isMine INTEGER DEFAULT 0, 
+          dateCreated TEXT,
+          preparationTime INTEGER,
+          associatedProducts TEXT
         )
       ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          // Agregar las nuevas columnas si se actualiza la versión de la base de datos
+          await db.execute('''
+          ALTER TABLE recipes ADD COLUMN dateCreated TEXT;
+          ALTER TABLE recipes ADD COLUMN preparationTime INTEGER;
+          ALTER TABLE recipes ADD COLUMN associatedProducts TEXT;
+          ''');
+        }
       },
     );
   }
@@ -97,5 +110,29 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) {
       return Recipe.fromMap(maps[i]);
     });
+  }
+
+  Future<Recipe> getLastRecipe() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'recipes',
+      orderBy: 'dateCreated DESC',
+      limit: 1,
+    );
+
+    if (maps.isNotEmpty) {
+      return Recipe.fromMap(maps.first);
+    } else {
+      // Si no hay recetas, devuelve la receta predeterminada
+      return Recipe.createNewRecipe(
+        'Mocha',
+        'Café expreso, leche vaporizada, jarabe de chocolate',
+        'Mezclar café expreso con leche vaporizada y añadir jarabe de chocolate.',
+        '2024-11-01',
+        7,
+        'Vaporizador de leche',
+        'assets/images/Mocha.jpeg',
+      );
+    }
   }
 }

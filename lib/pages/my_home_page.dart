@@ -1,11 +1,12 @@
+import 'dart:io';
+import 'package:espresso_dreams/utils/database_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:espresso_dreams/pages/user_page.dart';
 import 'package:espresso_dreams/pages/recipes_page.dart';
 import 'package:espresso_dreams/pages/saved_recipes_page.dart';
 import 'package:espresso_dreams/pages/my_recipes_page.dart';
 import 'package:espresso_dreams/models/recipe_class.dart';
-import 'package:espresso_dreams/models/product_class.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -18,19 +19,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool isFavorite = false;
+  Recipe? mostViewedRecipe; // Declaración de la receta más vista
 
-  // Instancia de la receta más vista usando la clase Recipe
-  Recipe mostViewedRecipe = Recipe(
-    'Café Irlandés',
-    '• Café caliente\n• Whisky\n• Azúcar\n• Crema',
-    '1. Preparar café caliente.\n2. Mezclar con whisky y azúcar.\n3. Cubrir con crema.',
-  );
+  @override
+  void initState() {
+    super.initState();
+    _loadLastRecipe();
+  }
 
-  Product bestSellingProduct = Product(
-      'Cafetera',
-      'Cafetera de alta calidad para preparar el mejor espresso en casa.',
-      15000,
-      10);
+  void _loadLastRecipe() async {
+    Recipe lastRecipe = await DatabaseHelper().getLastRecipe();
+    setState(() {
+      mostViewedRecipe = lastRecipe;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,8 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.favorite), // Icono para Recetas guardadas
+              leading: const Icon(Icons.favorite),
               title: const Text('Recetas favoritas'),
               onTap: () {
                 Navigator.push(
@@ -104,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.receipt_long), // Icono para Mis recetas
+              leading: const Icon(Icons.receipt_long),
               title: const Text('Mis recetas'),
               onTap: () {
                 Navigator.push(
@@ -128,54 +129,88 @@ class _MyHomePageState extends State<MyHomePage> {
               margin: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'La receta más vista',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      mostViewedRecipe.name, // Usa el nombre de la receta
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(mostViewedRecipe.ingredients), // Usa los ingredientes
-                    const SizedBox(height: 10),
-                    Text(
-                      'Instrucciones:\n${mostViewedRecipe.preparation}', // Usa las instrucciones
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: isFavorite ? Colors.red : null,
+                child: mostViewedRecipe == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'La receta más nueva',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
                           ),
-                          onPressed: () {
-                            setState(() {
-                              isFavorite = !isFavorite;
-                            });
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.share),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Compartiendo receta'),
+                          const SizedBox(height: 10),
+                          Text(
+                            mostViewedRecipe!.name,
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                          const SizedBox(height: 5),
+                          // Mostrar la imagen de la receta, si existe
+                          mostViewedRecipe!.image != null
+                              ? mostViewedRecipe!.image!.startsWith('assets/')
+                                  ? Image.asset(mostViewedRecipe!
+                                      .image!) // Si es un recurso (asset)
+                                  : Image.file(File(mostViewedRecipe!
+                                      .image!)) // Si es una imagen local
+                              : const SizedBox.shrink(),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Ingredientes:\n${mostViewedRecipe!.ingredients}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Preparación:\n${mostViewedRecipe!.preparation}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Productos asociados:\n${mostViewedRecipe!.associatedProducts}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Tiempo de preparación: ${mostViewedRecipe!.preparationTime} minutos',
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Fecha de creación: ${mostViewedRecipe!.dateCreated}',
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isFavorite
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: isFavorite ? Colors.red : null,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isFavorite = !isFavorite;
+                                  });
+                                },
                               ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                              IconButton(
+                                icon: const Icon(Icons.share),
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Compartiendo receta'),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
               ),
             ),
           ],

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:espresso_dreams/models/recipe_class.dart';
 import 'package:espresso_dreams/utils/database_helper.dart';
@@ -48,25 +50,37 @@ class _RecipesPageState extends State<RecipesPage> {
         'Café Americano',
         'Agua caliente, café molido',
         'Preparar café filtrado y añadir agua caliente.',
-        image: 'assets/images/americano-1024x682.jpg', // Ruta de la imagen
+        '2024-11-01', // Fecha de registro
+        5, // Tiempo de preparación
+        'Cafetera, filtro de papel', // Productos asociados
+        'assets/images/americano-1024x682.jpg',
       ),
       Recipe.createNewRecipe(
         'Cappuccino',
         'Café expreso, leche vaporizada, espuma de leche',
         'Mezclar café expreso con leche vaporizada y añadir espuma por encima.',
-        image: 'assets/images/Cappuccino.jpeg',
+        '2024-11-01',
+        7,
+        'Vaporizador de leche',
+        'assets/images/Cappuccino.jpeg',
       ),
       Recipe.createNewRecipe(
         'Latte',
         'Café expreso, leche vaporizada',
         'Combinar café expreso con leche vaporizada.',
-        image: 'assets/images/Latte.jpeg',
+        '2024-11-01',
+        8,
+        'Vaporizador de leche',
+        'assets/images/Latte.jpeg',
       ),
       Recipe.createNewRecipe(
         'Mocha',
         'Café expreso, leche vaporizada, jarabe de chocolate',
         'Mezclar café expreso con leche vaporizada y añadir jarabe de chocolate.',
-        image: 'assets/images/Mocha.jpeg',
+        '2024-11-01',
+        7,
+        'Vaporizador de leche',
+        'assets/images/Mocha.jpeg',
       ),
     ];
 
@@ -101,54 +115,51 @@ class _RecipesPageState extends State<RecipesPage> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // Buscador de recetas
+            // Campo de búsqueda
             TextField(
               controller: searchController,
               decoration: const InputDecoration(
                 labelText: 'Buscar recetas',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search), // Icono de búsqueda
+                prefixIcon: Icon(Icons.search),
               ),
             ),
             const SizedBox(height: 8),
             Expanded(
               child: ListView.builder(
-                itemCount:
-                    filteredRecipes.length + 1, // Total de recetas filtradas
+                itemCount: filteredRecipes.length + 1,
                 itemBuilder: (context, index) {
                   if (index == filteredRecipes.length) {
-                    return const SizedBox(
-                        height: 80); // Espacio al final de la lista
+                    return const SizedBox(height: 80);
                   }
 
                   return Card(
-                    margin: const EdgeInsets.symmetric(
-                        vertical: 8.0), // Margen de las tarjetas
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                Icons.coffee,
-                                color: Colors.brown[500],
-                                size: 40,
-                              ),
+                              Icon(Icons.coffee,
+                                  color: Colors.brown[500], size: 40),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      filteredRecipes[index]
-                                          .name, // Nombre de la receta
+                                      filteredRecipes[index].name,
                                       style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
+                                    Text(
+                                        'Fecha de registro: ${filteredRecipes[index].dateCreated}'),
+                                    Text(
+                                        'Tiempo de preparación: ${filteredRecipes[index].preparationTime} minutos'),
                                   ],
                                 ),
                               ),
@@ -177,16 +188,12 @@ class _RecipesPageState extends State<RecipesPage> {
                               ),
                               // Botón para compartir receta
                               IconButton(
-                                icon: const Icon(
-                                  Icons.share,
-                                  size: 24,
-                                ),
+                                icon: const Icon(Icons.share, size: 24),
                                 onPressed: () {
                                   // Muestra un mensaje al compartir
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Compartiendo receta'),
-                                    ),
+                                        content: Text('Compartiendo receta')),
                                   );
                                 },
                               ),
@@ -200,8 +207,8 @@ class _RecipesPageState extends State<RecipesPage> {
                                 ),
                                 onPressed: () {
                                   setState(() {
-                                    expandedStatus[index] = !expandedStatus[
-                                        index]; // Cambia el estado expandido
+                                    expandedStatus[index] =
+                                        !expandedStatus[index];
                                   });
                                 },
                               ),
@@ -216,47 +223,38 @@ class _RecipesPageState extends State<RecipesPage> {
                                 const Text(
                                   'Ingredientes:',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
                                 ),
-                                Text(filteredRecipes[index]
-                                    .ingredients), // Ingredientes de la receta
+                                Text(filteredRecipes[index].ingredients),
                                 const SizedBox(height: 8),
                                 const Text(
                                   'Preparación:',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
                                 ),
-                                Text(filteredRecipes[index]
-                                    .preparation), // Preparación de la receta
-                                const SizedBox(height: 16),
-                                // Mostrar imagen de la receta
-                                filteredRecipes[index].image != null
-                                    ? Image.asset(filteredRecipes[index].image!)
-                                    : const SizedBox
-                                        .shrink(), // Si no hay imagen, mostrar nada
-                                const SizedBox(height: 16),
+                                Text(filteredRecipes[index].preparation),
+                                const SizedBox(height: 8),
                                 const Text(
-                                  'Productos Recomendados',
+                                  'Productos Asociados:',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16),
                                 ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    _buildProductCard(), // Tarjeta de producto recomendada
-                                    _buildProductCard(), // Otra tarjeta de producto recomendada
-                                  ],
-                                ),
+                                Text(filteredRecipes[index].associatedProducts),
                                 const SizedBox(height: 16),
-                                _buildRating(
-                                    index), // Sección de calificaciones
+                                filteredRecipes[index].image != null
+                                    ? filteredRecipes[index]
+                                            .image!
+                                            .startsWith('assets/')
+                                        ? Image.asset(filteredRecipes[index]
+                                            .image!) // Si es una imagen de recursos (asset)
+                                        : Image.file(File(filteredRecipes[index]
+                                            .image!)) // Si es una imagen local (almacenada)
+                                    : const SizedBox.shrink(),
+                                const SizedBox(height: 16),
+                                _buildRating(index),
                               ],
                             ),
                         ],
@@ -329,30 +327,6 @@ class _RecipesPageState extends State<RecipesPage> {
           }),
         ),
       ],
-    );
-  }
-
-  // Método para construir una tarjeta de producto recomendada
-  Widget _buildProductCard() {
-    return Card(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.coffee_maker_outlined,
-            size: 40,
-            color: Colors.brown[500],
-          ),
-          TextButton(
-            onPressed: () {},
-            style: TextButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 174, 97, 71),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Comprar'),
-          ),
-        ],
-      ),
     );
   }
 
