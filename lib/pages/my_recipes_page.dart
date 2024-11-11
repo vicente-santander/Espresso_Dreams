@@ -1,9 +1,10 @@
 // ignore_for_file: avoid_print, use_build_context_synchronously
-
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
-
+// ignore: unnecessary_import
+import 'package:share_plus/share_plus.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'package:espresso_dreams/utils/camera_controller.dart';
 import 'package:flutter/material.dart';
@@ -95,11 +96,10 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
         TextEditingController();
     final TextEditingController associatedProductsController =
         TextEditingController();
-    // Variable para almacenar la imagen capturada
     final ValueNotifier<XFile?> recipeImageNotifier =
         ValueNotifier<XFile?>(null);
+    final ImagePicker picker = ImagePicker();
 
-    // Obtén la lista de cámaras disponibles y selecciona la primera cámara.
     final cameras = await availableCameras();
     final firstCamera = cameras.first;
 
@@ -140,27 +140,39 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                       const InputDecoration(labelText: 'Productos asociados'),
                 ),
                 const SizedBox(height: 8),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.camera_alt),
-                  label: const Text('Tomar Foto'),
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            TakePictureScreen(camera: firstCamera),
-                      ),
-                    );
-
-                    if (result != null) {
-                      recipeImageNotifier.value = result
-                          as XFile; // Actualiza el valor de ValueNotifier
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Foto capturada')),
-                      );
-                    }
-                  },
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.image),
+                      label: const Text('Galería'),
+                      onPressed: () async {
+                        final pickedFile =
+                            await picker.pickImage(source: ImageSource.gallery);
+                        if (pickedFile != null) {
+                          recipeImageNotifier.value = pickedFile;
+                        }
+                      },
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Cámara'),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TakePictureScreen(camera: firstCamera),
+                          ),
+                        );
+                        if (result != null) {
+                          recipeImageNotifier.value = result as XFile;
+                        }
+                      },
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 8),
                 ValueListenableBuilder<XFile?>(
                   valueListenable: recipeImageNotifier,
                   builder: (context, recipeImage, child) {
@@ -192,8 +204,6 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               onPressed: () async {
                 final String currentDate =
                     DateFormat('yyyy-MM-dd').format(DateTime.now());
-
-                // Guarda la imagen en almacenamiento persistente
                 final imagePath = recipeImageNotifier.value != null
                     ? await _saveImageToPersistentStorage(
                         recipeImageNotifier.value!)
@@ -206,7 +216,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                   currentDate,
                   int.tryParse(preparationTimeController.text) ?? 0,
                   associatedProductsController.text,
-                  imagePath, // Usa la nueva ruta de imagen persistente aquí
+                  imagePath,
                 );
 
                 newRecipe.isMine = true;
@@ -227,7 +237,7 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Recetas'),
-        backgroundColor: const Color.fromARGB(255, 174, 97, 71),
+        backgroundColor: const Color.fromARGB(255, 202, 97, 32),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -254,11 +264,6 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                         children: [
                           Row(
                             children: [
-                              Icon(
-                                Icons.coffee,
-                                color: Colors.brown[500],
-                                size: 40,
-                              ),
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Column(
@@ -282,10 +287,11 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                               IconButton(
                                 icon: Icon(
                                   favoriteStatus[index]
-                                      ? Icons.favorite
-                                      : Icons.favorite_border_sharp,
-                                  color:
-                                      favoriteStatus[index] ? Colors.red : null,
+                                      ? Icons.remove_red_eye
+                                      : Icons.remove_red_eye_outlined,
+                                  color: favoriteStatus[index]
+                                      ? Colors.black
+                                      : null,
                                   size: 24,
                                 ),
                                 onPressed: () {
@@ -337,26 +343,43 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                                   ),
                                 ),
                                 Text(filteredRecipes[index].preparation),
-                                const SizedBox(height: 16),
-                                // Aquí agregamos la imagen de la receta
-                                if (filteredRecipes[index].image !=
-                                    null) // Verifica si hay una imagen
-                                  Image.file(
-                                    File(filteredRecipes[index].image!),
-                                    height:
-                                        200, // Ajusta la altura según lo necesites
-                                    fit: BoxFit
-                                        .cover, // Ajusta el ajuste según lo necesites
-                                  ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 8),
                                 const Text(
-                                  'Calificaciones:',
+                                  'Productos asociados:',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
                                 ),
-                                _buildRating(index),
+                                Text(filteredRecipes[index].associatedProducts),
+                                const SizedBox(height: 16),
+                                // Verifica si hay una imagen
+                                if (filteredRecipes[index].image != null)
+                                  _buildImage(filteredRecipes[index].image!),
+                                const SizedBox(height: 16),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tiempo de preparación: ${filteredRecipes[index].preparationTime} minutos',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          Color.fromARGB(255, 106, 106, 106)),
+                                ),
+                                Text(
+                                  'Fechade registro: ${filteredRecipes[index].dateCreated}',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          Color.fromARGB(255, 106, 106, 106)),
+                                ),
+                                Text(
+                                  'Veces preparada: ${filteredRecipes[index].usageCount}',
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      color:
+                                          Color.fromARGB(255, 106, 106, 106)),
+                                ),
+                                const SizedBox(height: 8),
                               ],
                             ),
                         ],
@@ -377,18 +400,51 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
     );
   }
 
-  void _editRecipe(int index) {
+  Widget _buildImage(String? imagePath) {
+    if (imagePath == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Verifica si es una ruta de archivo (local) o una imagen de assets
+    bool isAsset = imagePath.startsWith('assets/');
+
+    if (isAsset) {
+      // Si la imagen es un asset
+      return Image.asset(
+        imagePath,
+        height: 200,
+        fit: BoxFit.cover,
+      );
+    } else {
+      // Si la imagen es un archivo local
+      return Image.file(
+        File(imagePath),
+        height: 200,
+        fit: BoxFit.cover,
+      );
+    }
+  }
+
+  Future<void> _editRecipe(int index) async {
+    final recipe = filteredRecipes[index];
     final TextEditingController nameController =
-        TextEditingController(text: filteredRecipes[index].name);
+        TextEditingController(text: recipe.name);
     final TextEditingController ingredientsController =
-        TextEditingController(text: filteredRecipes[index].ingredients);
+        TextEditingController(text: recipe.ingredients);
     final TextEditingController preparationController =
-        TextEditingController(text: filteredRecipes[index].preparation);
+        TextEditingController(text: recipe.preparation);
     final TextEditingController preparationTimeController =
-        TextEditingController(
-            text: filteredRecipes[index].preparationTime.toString());
+        TextEditingController(text: recipe.preparationTime.toString());
     final TextEditingController associatedProductsController =
-        TextEditingController(text: filteredRecipes[index].associatedProducts);
+        TextEditingController(text: recipe.associatedProducts);
+
+    final ValueNotifier<XFile?> recipeImageNotifier =
+        ValueNotifier<XFile?>(null);
+    bool isAssetImage =
+        recipe.image != null && recipe.image!.startsWith('assets/');
+
+    final cameras = await availableCameras();
+    final firstCamera = cameras.first;
 
     showDialog(
       context: context,
@@ -406,12 +462,14 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                 TextField(
                   controller: ingredientsController,
                   decoration: const InputDecoration(labelText: 'Ingredientes'),
-                  maxLines: 3,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
                 ),
                 TextField(
                   controller: preparationController,
                   decoration: const InputDecoration(labelText: 'Preparación'),
-                  maxLines: 3,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
                 ),
                 TextField(
                   controller: preparationTimeController,
@@ -424,6 +482,61 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
                   decoration:
                       const InputDecoration(labelText: 'Productos asociados'),
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.photo),
+                      label: const Text('Galería'),
+                      onPressed: () async {
+                        final pickedFile = await ImagePicker()
+                            .pickImage(source: ImageSource.gallery);
+                        if (pickedFile != null) {
+                          recipeImageNotifier.value = pickedFile;
+                          isAssetImage = false;
+                        }
+                      },
+                    ),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Cámara'),
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TakePictureScreen(camera: firstCamera),
+                          ),
+                        );
+                        if (result != null) {
+                          recipeImageNotifier.value = result as XFile;
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                ValueListenableBuilder<XFile?>(
+                  valueListenable: recipeImageNotifier,
+                  builder: (context, recipeImage, child) {
+                    if (recipeImage != null) {
+                      return Column(
+                        children: [
+                          const SizedBox(height: 8),
+                          Image.file(
+                            File(recipeImage.path),
+                            height: 200,
+                            fit: BoxFit.cover,
+                          ),
+                        ],
+                      );
+                    } else if (recipe.image != null) {
+                      return _buildImage(recipe.image);
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  },
+                ),
               ],
             ),
           ),
@@ -433,59 +546,34 @@ class _MyRecipesPageState extends State<MyRecipesPage> {
               child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  filteredRecipes[index].updateRecipe(
-                    newName: nameController.text,
-                    newIngredients: ingredientsController.text,
-                    newPreparation: preparationController.text,
-                    newPreparationTime:
-                        int.tryParse(preparationTimeController.text) ??
-                            filteredRecipes[index].preparationTime,
-                    newAssociatedProducts: associatedProductsController.text,
-                  );
-                  dbHelper.updateRecipe(filteredRecipes[index]);
-                });
+              onPressed: () async {
+                String? imagePath;
+                if (recipeImageNotifier.value != null) {
+                  imagePath = await _saveImageToPersistentStorage(
+                      recipeImageNotifier.value!);
+                } else if (isAssetImage) {
+                  imagePath = recipe.image;
+                }
+
+                recipe.updateRecipeImage(
+                  newName: nameController.text,
+                  newIngredients: ingredientsController.text,
+                  newPreparation: preparationController.text,
+                  newPreparationTime:
+                      int.tryParse(preparationTimeController.text) ?? 0,
+                  newAssociatedProducts: associatedProductsController.text,
+                  newPath: imagePath,
+                );
+                await dbHelper.updateRecipe(recipe);
+
                 Navigator.of(context).pop();
+                _loadSavedRecipes();
               },
               child: const Text('Guardar'),
             ),
           ],
         );
       },
-    );
-  }
-
-  Widget _buildRating(int index) {
-    double averageRating = filteredRecipes[index].getAverageRating();
-    int ratingCount = filteredRecipes[index].getRatingCount();
-
-    return Column(
-      children: [
-        Text(
-          'Promedio: ${averageRating.toStringAsFixed(1)} ($ratingCount calificaciones)',
-          style: const TextStyle(fontSize: 14),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(5, (starIndex) {
-            return IconButton(
-              icon: Icon(
-                starIndex < averageRating.floor()
-                    ? Icons.star
-                    : Icons.star_border,
-                color: Colors.amber,
-              ),
-              onPressed: () {
-                setState(() {
-                  filteredRecipes[index].addRating((starIndex + 1).toDouble());
-                  dbHelper.updateRecipe(filteredRecipes[index]);
-                });
-              },
-            );
-          }),
-        ),
-      ],
     );
   }
 

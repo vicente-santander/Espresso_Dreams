@@ -1,3 +1,7 @@
+import 'dart:convert'; // Importar para convertir JSON a objeto
+import 'package:flutter/services.dart'; // Para cargar el archivo JSON
+import 'package:espresso_dreams/utils/database_helper.dart';
+
 class Recipe {
   int? id;
   String name;
@@ -10,6 +14,7 @@ class Recipe {
   String dateCreated; // Fecha de registro
   int preparationTime; // Tiempo de preparación en minutos
   String associatedProducts; // Productos asociados
+  int usageCount;
 
   Recipe(
     this.name,
@@ -21,6 +26,7 @@ class Recipe {
     required this.dateCreated,
     required this.preparationTime,
     required this.associatedProducts,
+    this.usageCount = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -34,7 +40,8 @@ class Recipe {
       'isMine': isMine ? 1 : 0,
       'dateCreated': dateCreated,
       'preparationTime': preparationTime,
-      'associatedProducts': associatedProducts
+      'associatedProducts': associatedProducts,
+      'usageCount': usageCount,
     };
   }
 
@@ -49,7 +56,43 @@ class Recipe {
       dateCreated: map['dateCreated'],
       preparationTime: map['preparationTime'],
       associatedProducts: map['associatedProducts'],
+      usageCount: map['usageCount'] ?? 0,
     )..id = map['id'];
+  }
+
+  static Future<void> loadInitialRecipes(DatabaseHelper dbHelper) async {
+    // Cargar el archivo JSON
+    final String response =
+        await rootBundle.loadString('assets/data/barista.json');
+    final List<dynamic> data = json.decode(response);
+
+    // Convertir los datos del JSON en objetos Recipe
+    List<Recipe> recipes = data.map((recipeData) {
+      return Recipe(
+        recipeData['name'],
+        recipeData['ingredients'],
+        recipeData['preparation'],
+        image: recipeData['image'],
+        isFavorite: recipeData['isFavorite'],
+        isMine: recipeData['isMine'],
+        dateCreated: recipeData['dateCreated'],
+        preparationTime: recipeData['preparationTime'],
+        associatedProducts: recipeData['associatedProducts'],
+      );
+    }).toList();
+
+    // Insertar las recetas en la base de datos
+    for (var recipe in recipes) {
+      bool exists = await DatabaseHelper().recipeExists(recipe.name);
+      if (!exists) {
+        await DatabaseHelper().insertRecipe(recipe);
+      }
+    }
+  }
+
+  void incrementUsageCount() {
+    usageCount += 1; // Aumenta el contador de uso
+    DatabaseHelper().updateRecipe(this); // Actualiza en la base de datos
   }
 
   // Método para actualizar la receta
@@ -65,6 +108,24 @@ class Recipe {
     preparation = newPreparation;
     preparationTime = newPreparationTime;
     associatedProducts = newAssociatedProducts;
+    isMine = true;
+  }
+
+  // Método para actualizar la receta
+  void updateRecipeImage({
+    required String newName,
+    required String newIngredients,
+    required String newPreparation,
+    required int newPreparationTime,
+    required String newAssociatedProducts,
+    required String? newPath,
+  }) {
+    name = newName;
+    ingredients = newIngredients;
+    preparation = newPreparation;
+    preparationTime = newPreparationTime;
+    associatedProducts = newAssociatedProducts;
+    image = newPath;
   }
 
   double getAverageRating() {

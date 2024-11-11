@@ -2,26 +2,45 @@
     {
         "name": "Café Dalgona Caliente",
         "ingredients": "2 cucharaditas de café soluble o instantáneo\n2 cucharaditas de azúcar\n2 cucharaditas de agua caliente\n150 ml de leche o bebida vegetal\nchocolate rallado",
-        "preparation": "Con unas varillas (eléctricas o manuales) mezcla el café soluble, el azúcar y el agua caliente. El resultado tiene que ser una crema espesa de café.\nCalienta la leche o bebida vegetal y échala en un vaso.\nColoca por encima la crema de café.\nDecora con el chocolate rallado",
-        "image": "assets/images/cafe-dalgona-caliente-500x427.jpg"
-        
+        "preparation": "Con unas varillas (eléctricas o manuales) mezcla el café soluble, el azúcar y el agua caliente. El resultado tiene que ser una crema espesa de café.\nCalienta la leche o bebida vegetal y échala en un vaso.\nColoca por encima la crema de café.\nDecora con el chocolate rallado.",
+        "image": "assets/images/cafe-dalgona-caliente-500x427.jpg",
+        "isFavorite": false,
+        "isMine": false,
+        "dateCreated": "2024-11-09",
+        "preparationTime": 10,
+        "associatedProducts": "Maquina de café"
     },
     {
         "name": "Flat White Especiado",
         "ingredients": "2 shot de espresso o espresso doble\n1/3 taza de leche o bebida vegetal\n1 pizca de canela molida\n1 pizca de nuez moscada molida\n1 pizca de jengibre molido\n1 pizca de pimienta molida",
         "preparation": "Prepara dos shot de espresso o espresso doble en una taza.\nIncorpora las especias (canela, nuez moscada, jengibre y pimienta) y remueve bien para que se integren.\nEspuma la leche caliente o bebida vegetal con el vaporizador o el espumador.\nVierte la leche espumada sobre el café hasta el borde.\nDecora por encima con un poquito más de canela en polvo.",
-        "image": "assets/images/cafe-especiado-500x461.png"
+        "image": "assets/images/cafe-especiado-500x461.png",
+        "isFavorite": false,
+        "isMine": false,
+        "dateCreated": "2024-11-05",
+        "preparationTime": 15,
+        "associatedProducts": "Maquina de café, espumadera"
     },
     {
         "name": "Latte de Chocolate",
         "ingredients": "1 café espresso\n2/3 taza de leche o bebida vegetal\nSirope de chocolate",
         "preparation": "Vierte el sirope de chocolate en el fondo y paredes del vaso que vayas a utilizar.\nEspuma la leche con tu vaporizador o espumador.\nAñade la leche espumada en el vaso del sirope de chocolate.\nPrepara un espresso y échalo lentamente sobre la leche.\nDecora por encima con un poco más de sirope de chocolate.",
-        "image": "assets/images/latte-chocolate-500x591.jpg"
+        "image": "assets/images/latte-chocolate-500x591.jpg",
+        "isFavorite": false,
+        "isMine": false,
+        "dateCreated": "2024-11-07",
+        "preparationTime": 10,
+        "associatedProducts": "Maquina de café"
     },
     {
         "name": "Carajillo",
         "ingredients": "1 café espresso\n1 chorrito de bebida alcohólica (brandy, aguardiente o ron)\nUn poco de nata montada\nUn poco de canela o cacao en polvo",
         "preparation": "Prepara un espresso en una taza o vaso.\nAgrega el chorrito de la bebida alcohólica elegida (brandy, orujo o ron) y remueve para que se mezclen bien.\nDecora por encima con un poco de nata montada y canela o cacao en polvo.",
-        "image": "assets/images/cafe-carajillo-500x374.jpg"
+        "image": "assets/images/cafe-carajillo-500x374.jpg",
+        "isFavorite": false,
+        "isMine": false,
+        "dateCreated": "2024-11-08",
+        "preparationTime": 5,
+        "associatedProducts": "Maquina de café"
     }
 ]

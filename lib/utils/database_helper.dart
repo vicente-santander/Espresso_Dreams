@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:espresso_dreams/models/recipe_class.dart';
@@ -21,7 +22,7 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'recipes.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE recipes(
@@ -34,17 +35,16 @@ class DatabaseHelper {
           isMine INTEGER DEFAULT 0, 
           dateCreated TEXT,
           preparationTime INTEGER,
-          associatedProducts TEXT
+          associatedProducts TEXT,
+          usageCount INTEGER DEFAULT 0
         )
       ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
+        if (oldVersion < 3) {
           // Agregar las nuevas columnas si se actualiza la versión de la base de datos
           await db.execute('''
-          ALTER TABLE recipes ADD COLUMN dateCreated TEXT;
-          ALTER TABLE recipes ADD COLUMN preparationTime INTEGER;
-          ALTER TABLE recipes ADD COLUMN associatedProducts TEXT;
+          ALTER TABLE recipes ADD COLUMN usageCount INTEGER DEFAULT 0;
           ''');
         }
       },
@@ -53,11 +53,35 @@ class DatabaseHelper {
 
   Future<void> insertRecipe(Recipe recipe) async {
     final db = await database;
+
+    // Obtener la fecha y hora actuales
+    String currentDate =
+        DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now());
+
     await db.insert(
       'recipes',
-      recipe.toMap(),
+      {
+        'name': recipe.name,
+        'ingredients': recipe.ingredients,
+        'preparation': recipe.preparation,
+        'image': recipe.image,
+        'isFavorite': recipe.isFavorite ? 1 : 0,
+        'isMine': recipe.isMine ? 1 : 0,
+        'dateCreated': currentDate,
+        'preparationTime': recipe.preparationTime,
+        'associatedProducts': recipe.associatedProducts,
+      },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<void> incrementUsageCount(int recipeId) async {
+    final db = await database;
+    await db.rawUpdate('''
+      UPDATE recipes 
+      SET usageCount = usageCount + 1 
+      WHERE id = ?
+    ''', [recipeId]);
   }
 
   Future<List<Recipe>> getRecipes() async {

@@ -1,30 +1,32 @@
 # espresso_dreams
 Video presentación de app: https://youtu.be/ZDOZwtbLUDs
 ## Descripción del Proyecto
-Espresso Dreams es una aplicación móvil diseñada para los amantes del café, que permite a los usuarios gestionar, descubrir y compartir recetas de café, además de comprar productos relacionados. Entre sus principales características, ofrece la posibilidad de crear y gestionar un perfil, explorar una amplia variedad de recetas, guardar favoritas, añadir recetas propias, y comprar productos como cafeteras. Además, cuenta con una sección para vender productos y un foro para interactuar con otros usuarios, discutir técnicas de preparación y compartir experiencias. La aplicación ha sido desarrollada en Flutter para ofrecer compatibilidad multiplataforma.
+Espresso Dreams es una aplicación móvil diseñada para los amantes del café, que permite a los usuarios gestionar, descubrir y compartir recetas de café. Entre sus principales características, ofrece la posibilidad de crear y gestionar recetas, explorar una amplia variedad de preparaciones, guardar recetas como "recetas en preparacion", tomar fotos de las recetas preparadas, asi como poder compartirlas. La aplicación está desarrollada en Flutter, garantizando compatibilidad multiplataforma para dispositivos móviles y tabletas.
+En esta versión se redujeron las caracteristicas para poder validar las funcionalidades principales y poder asi hacer una pagina para recir las retroalimentaciones del usuario enfocado en uasbilidad, contenido y compartir para asi poder obtener un analisis de las fortalezas y debilidades
 
 ## Requerimientos
-### 1. Gestión de Recetas
-- Creación de Recetas: Los usuarios deben poder crear nuevas recetas, especificando ingredientes, pasos de preparación y técnicas utilizadas.
-- Edición y Eliminación: Los usuarios deben poder editar y eliminar sus recetas existentes.
-- Listas de Recetas Favoritas: Permitir a los usuarios guardar recetas como favoritas para fácil acceso futuro.
-### 2. Visualización de Recetas Favoritas
-- Sección de Favoritos: Crear una sección o página dentro de la aplicación donde los usuarios puedan ver todas las recetas que han marcado como favoritas.
-### 3. Exploración y Búsqueda de Recetas
-- Ofrecer una función de búsqueda avanzada que permita filtrar recetas por tipo de preparación, ingredientes, tiempo de preparación, etc.
-### 4. Sistema de Calificación
-- Método de Calificación: Implementar un sistema de calificación que permita a los usuarios valorar las recetas mediante un sistema de estrellas, puntos, o un rango de 1 a 5.
-- Visualización de Calificaciones: Mostrar la calificación promedio de la receta en la página de detalles de la receta y permitir a los usuarios ver la distribución de calificaciones si es aplicable.
-### 5. Interacción Social
-- Permitir a los usuarios compartir sus recetas y experiencias en una comunidad dentro de la aplicación.
-- Habilitar la posibilidad de calificar y dejar comentarios en las recetas o comentarios compartidos por otros usuarios.
-### 6. Funcionalidades de Comunidad
-- Foros y Chats: Incluir foros o espacios de chat donde los usuarios puedan discutir sobre técnicas de preparación, compartir consejos y hacer preguntas.
-### 7- Compatibilidad Multiplataforma
-- Asegurar que la aplicación sea accesible y funcional en dispositivos móviles, tabletas y computadoras de escritorio.
-### 8. Integración de Productos Relacionados con el Café
-- Catálogo de Productos de Café: Incluir un catálogo de productos relacionados con la preparación de café, como granos, molinillos, filtros, cafeteras, etc. Los usuarios podrán explorar estos productos desde la aplicación.
-- Recomendaciones de Productos: Mostrar recomendaciones de productos basadas en las recetas visualizadas o creadas por los usuarios, y sus preferencias de técnicas de preparación.
-- Proceso de Compra Integrado: Integrar una función de compra directa, donde los usuarios puedan adquirir productos relacionados desde la propia aplicación, facilitando la transacción sin necesidad de salir de la plataforma.
-- Venta de productos: El usuario puede vender productos relacionados con el cafe.
+Aquí tienes una lista de requerimientos clave para el desarrollo de la aplicación de recetas de café basada en el análisis del documento:
+
+### 1. **Interfaz de Usuario:**
+   - Implementar una identidad digital distintiva con un ícono y una paleta de colores (al menos 4 colores).
+   - Asegurarse de que los widgets seleccionados sean adecuados para la presentación de productos, recetas y otras secciones de la app.
+   - Pantalla de inicio que muestre un resumen de la actividad y las últimas recetas.
+   - Sección de "Mis Recetas" donde el usuario pueda gestionar sus recetas.
+
+### 2. **Funcionalidades de Recetas:**
+   - Las recetas deben incluir al menos: imágenes, lista de ingredientes, pasos de preparación, fecha de registro, duración estimada y productos necesarios.
+   - Posibilidad de guardar las recetas seleccionadas de manera persistente.
+   - Opciones para que el usuario registre ingredientes, productos, y tiempo dedicado a la preparación de recetas.
+   - Inclusión de una función para agregar fotos de las recetas.
+   - Resumen de ingredientes o productos necesarios para la preparación de recetas, con opción de compartir esta información por plataformas externas.
+
+### 3. **Compartir:**
+   - Permitir compartir recetas y listas de productos a través de otras aplicaciones.
+
+### 4. **Validación por Terceros:**
+   - Distribuir una versión APK para pruebas de usuarios en dispositivos Android.
+   - Establecer un proceso de validación beta con al menos seis usuarios, distribuidos entre usuarios técnicos y no técnicos, para recopilar opiniones.
+
+### 5. **Persistencia de Datos:**
+   - Almacenar de manera persistente información como recetas creadas, cantidad de veces preparada cada receta y fotos asociadas.
 
