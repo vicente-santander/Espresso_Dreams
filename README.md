@@ -2,7 +2,7 @@
 Video presentación de app: https://youtu.be/ZDOZwtbLUDs
 ## Descripción del Proyecto
 Espresso Dreams es una aplicación móvil diseñada para los amantes del café, que permite a los usuarios gestionar, descubrir y compartir recetas de café. Entre sus principales características, ofrece la posibilidad de crear y gestionar recetas, explorar una amplia variedad de preparaciones, guardar recetas como "recetas en preparacion", tomar fotos de las recetas preparadas, asi como poder compartirlas. La aplicación está desarrollada en Flutter, garantizando compatibilidad multiplataforma para dispositivos móviles y tabletas.
-En esta versión se redujeron las caracteristicas para poder validar las funcionalidades principales y poder asi hacer una pagina para recir las retroalimentaciones del usuario enfocado en uasbilidad, contenido y compartir para asi poder obtener un analisis de las fortalezas y debilidades
+En esta versión se redujeron las caracteristicas para poder validar las funcionalidades principales y poder asi hacer una pagina para recir las retroalimentaciones del usuario enfocado en usabilidad, contenido y compartir para asi poder obtener un analisis de las fortalezas y debilidades
 
 ## Requerimientos
 Aquí tienes una lista de requerimientos clave para el desarrollo de la aplicación de recetas de café basada en el análisis del documento:
