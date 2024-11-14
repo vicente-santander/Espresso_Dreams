@@ -5,7 +5,6 @@ Espresso Dreams es una aplicación móvil diseñada para los amantes del café, 
 En esta versión se redujeron las caracteristicas para poder validar las funcionalidades principales y poder asi hacer una pagina para recir las retroalimentaciones del usuario enfocado en usabilidad, contenido y compartir para asi poder obtener un analisis de las fortalezas y debilidades
 
 ## Requerimientos
-Aquí tienes una lista de requerimientos clave para el desarrollo de la aplicación de recetas de café basada en el análisis del documento:
 
 ### 1. **Interfaz de Usuario:**
    - Implementar una identidad digital distintiva con un ícono y una paleta de colores (al menos 4 colores).
